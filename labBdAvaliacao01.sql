@@ -184,6 +184,20 @@ begin
 		return @anoLimite
 end
 
+-- Funcao para criacao de RA
+
+
+create function fn_criaRa (@anoIngresso int, @semestreIngresso int, @rand1 int, @rand2 int, @rand3 int, @rand4 int)
+returns char(9)
+as
+begin
+    declare @ra char(9)
+
+    set @ra = cast(@anoIngresso as char(4)) + cast(@semestreIngresso as char(1)) + cast(@rand1 as char(1)) + cast(@rand2 as char(1)) + cast(@rand3 as char(1)) + cast(@rand4 as char(1))
+	
+    return @ra
+end
+
 --PROCEDURE PARA INSERIR E ATUALIZAR ALUNO
 -- drop procedure sp_iuAluno
 
@@ -202,8 +216,16 @@ as
 				begin
 						if(upper(@op) = 'I')						
 						begin
+								declare @random1 int, @random2 int, @random3 int, @random4 int
+								set @random1 = CAST(RAND() * 10 as int)
+								set @random2 = CAST(RAND() * 10 as int)
+								set @random3 = CAST(RAND() * 10 as int)
+								set @random4 = CAST(RAND() * 10 as int)
+
+								set @ra = (SELECT dbo.fn_criaRa(2024, 1, @random1, @random2, @random3, @random4) as ra)
+
 								declare @anolimite int
-								set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso))
+								set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
 								
 								insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
 														  @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
@@ -291,3 +313,12 @@ print @saidaa
 
 insert into Aluno values ('41707740860', 5, '202415287', 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', '01-12-2023', 'guilherme.silveira5287@agis.com', 'Camargo Aranha', 100, 1, 2024, 1, 1, 2029, 'Vespertino')
 
+-- Teste Funcao fn_criaRA
+declare @random1 int, @random2 int, @random3 int, @random4 int
+
+set @random1 = CAST(RAND() * 10 as int)
+set @random2 = CAST(RAND() * 10 as int)
+set @random3 = CAST(RAND() * 10 as int)
+set @random4 = CAST(RAND() * 10 as int)
+
+SELECT dbo.fn_criaRa(2024, 1, @random1, @random2, @random3, @random4) AS RA
