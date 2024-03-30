@@ -250,10 +250,15 @@ as
 								insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
 														  @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
 
-/*								insert into Telefone (numero, cpf) values 
-									(@telefone1, @cpf),
-									(@telefone2, @cpf)
-									*/
+								insert into Telefone (numero, cpf) values 
+									(@telefone1, @cpf)
+								
+								if @telefone2 is not null
+								begin 
+									insert into Telefone (numero, cpf) values
+										(@telefone2, @cpf)
+								end
+
 								set @saida = 'Aluno inserido com sucesso'
 						end
 						else
@@ -324,11 +329,16 @@ VALUES ('12345678901', '12345678901'),
 select * from Aluno where cpf = '41707740860'
 delete Aluno where cpf = '41707740860'
 
+select a.nome, t.numero
+from Aluno a, Telefone t
+where a.cpf = t.cpf and a.cpf = '41707740860'
 
+select * from Telefone
+delete Telefone where cpf = '41707740860'
 --
 declare @saidaa varchar(100)
 exec sp_iuAluno 'I', '41707740860', 5, 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', '01-12-2023', 'Camargo Aranha', 100, 1, 2024, 1, 1, '11948574785',
-				'11985693254', @saidaa output
+				/*null*/'11985693254', @saidaa output
 print @saidaa
 
 insert into Aluno values ('41707740860', 5, '202415287', 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', '01-12-2023', 'guilherme.silveira5287@agis.com', 'Camargo Aranha', 100, 1, 2024, 1, 1, 2029, 'Vespertino')
