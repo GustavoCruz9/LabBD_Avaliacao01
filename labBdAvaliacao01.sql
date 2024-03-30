@@ -180,13 +180,11 @@ returns int
 as
 begin
 		declare @anoLimite int
-		set @anolimite = datediff(year, @anoIngresso, 5)
+		set @anolimite = @anoIngresso + 5
 		return @anoLimite
 end
 
 -- Funcao para criacao de RA
-
-
 create function fn_criaRa (@anoIngresso int, @semestreIngresso int, @rand1 int, @rand2 int, @rand3 int, @rand4 int)
 returns char(9)
 as
@@ -198,12 +196,26 @@ begin
     return @ra
 end
 
+--FUCNTION QUE CRIA O EMAIL CORPORATIVO
+
+create function fn_criaEmailCorporativo(@nome varchar(150), @ra char(9))
+returns varchar (100)
+as
+begin
+
+	set @nome = LOWER(@nome)
+	set @nome = REPLAce(@nome, ' ', '.')
+
+	set @nome = @nome + RIGHT(@ra, 4) + '@agis.com'
+	return @nome
+end
+
 --PROCEDURE PARA INSERIR E ATUALIZAR ALUNO
 -- drop procedure sp_iuAluno
 
-create procedure sp_iuAluno(@op char(1), @cpf char(11), @ra char(9), @codCurso int, @nome varchar(150), @nomeSocial varchar(150), @dataNascimento date, @email varchar(100), @emailCorporativo  varchar(100),
-								  @dataConclusao2Grau date, @instituicao2Grau varchar(100), @pontuacaoVestibular int, @posicaoVestibular int, @anoIngresso int, @semestreIngresso int, @semestreLimite int, 
-								  @telefone1 varchar(11),  @telefone2 varchar(11), @saida varchar(100) output)
+create procedure sp_iuAluno(@op char(1), @cpf char(11), @codCurso int, @nome varchar(150), @nomeSocial varchar(150), @dataNascimento date, @email varchar(100), @dataConclusao2Grau date,
+							@instituicao2Grau varchar(100), @pontuacaoVestibular int, @posicaoVestibular int, @anoIngresso int, @semestreIngresso int, @semestreLimite int, 
+						    @telefone1 varchar(11),  @telefone2 varchar(11), @saida varchar(100) output)
 as
 		declare @validaCpf bit
 
@@ -216,13 +228,21 @@ as
 				begin
 						if(upper(@op) = 'I')						
 						begin
-								declare @random1 int, @random2 int, @random3 int, @random4 int
+								declare @random1 int,
+										@random2 int, 
+										@random3 int, 
+										@random4 int,
+										@ra char(9),
+										@emailCorporativo  varchar(100)
+
 								set @random1 = CAST(RAND() * 10 as int)
 								set @random2 = CAST(RAND() * 10 as int)
 								set @random3 = CAST(RAND() * 10 as int)
 								set @random4 = CAST(RAND() * 10 as int)
 
 								set @ra = (SELECT dbo.fn_criaRa(2024, 1, @random1, @random2, @random3, @random4) as ra)
+
+								set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
 
 								declare @anolimite int
 								set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
@@ -307,7 +327,7 @@ delete Aluno where cpf = '41707740860'
 
 --
 declare @saidaa varchar(100)
-exec sp_iuAluno 'I', '41707740860', '202415287', 5, 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', 'guilherme.silveira5287@agis.com', '01-12-2023', 'Camargo Aranha', 100, 1, 2024, 1, 1, '11948574785',
+exec sp_iuAluno 'I', '41707740860', 5, 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', '01-12-2023', 'Camargo Aranha', 100, 1, 2024, 1, 1, '11948574785',
 				'11985693254', @saidaa output
 print @saidaa
 
@@ -322,3 +342,5 @@ set @random3 = CAST(RAND() * 10 as int)
 set @random4 = CAST(RAND() * 10 as int)
 
 SELECT dbo.fn_criaRa(2024, 1, @random1, @random2, @random3, @random4) AS RA
+
+select dbo.fn_criaEmailCorporativo('Gustavo da Cruz santos', '202411234') as emailCorp

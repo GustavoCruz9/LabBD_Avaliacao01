@@ -18,7 +18,7 @@
         <form action="tabelaDiasSemana" method="post" class="formMatricula">
             <div class="cpfMatricula">
                 <div class="pesquisaCpf">
-                    <input type="text" name="pesquisaCpf" id="pesquisaCpf" placeholder="CPF" class="inputCPF">
+                    <input type="text" name="pesquisaRa" id="pesquisaRa" placeholder="RA" class="inputCPF">
                     <input type="submit" value="🔎" class="btnCPF">
                 </div>
             </div>

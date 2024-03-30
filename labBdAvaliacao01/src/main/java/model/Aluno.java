@@ -12,8 +12,8 @@ import lombok.ToString;
 public class Aluno {
 	
 	private String cpf;
-	private int ra; 
-	private int codigoCurso;
+	private String ra; 
+	private Curso curso;
 	private String nome;
 	private String nomeSocial;
 	private LocalDate dataNascimento;
@@ -27,4 +27,7 @@ public class Aluno {
 	private int semestreIngresso;
 	private int anoLimite;
 	private int semestreLimite;
+	private Telefone telefone1;
+	private Telefone telefone2;
+	
 }

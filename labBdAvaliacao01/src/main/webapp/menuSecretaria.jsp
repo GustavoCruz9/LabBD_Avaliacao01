@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
@@ -23,56 +24,87 @@
 			<table>
 				<tr>
 					<td colspan="3"><input type="number" id="cpf" name="cpf"
-						placeholder="CPF" required></td>
-					<td><input type="submit" id="buscar" name="buscar"
+						placeholder="CPF" value='<c:out value="${aluno.cpf}"></c:out>'></td>
+					<td><input type="submit" id="botao" name="botao"
 						value="Buscar"></td>
 				</tr>
 				<tr>
 					<td colspan="4"><input type="text" id="nome" name="nome"
-						placeholder="Nome" required></td>
+						placeholder="Nome" value='<c:out value="${aluno.nome}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="1">
 						<div class="datas">
-							<label for="dataNascimento">Data de Nascimento</label> 
-							<input type="date" id="dataNascimento" name="dataNascimento" required>
+							<label for="dataNascimento">Data de Nascimento</label> <input
+								type="date" id="dataNascimento" name="dataNascimento" 
+								value='<c:out value="${aluno.dataNascimento}"></c:out>'>
 						</div>
 					</td>
 					<td colspan="3"><input type="text" id="nomeSocial"
-						name="nomeSocial" placeholder="Nome Social"></td>
+						name="nomeSocial" placeholder="Nome Social" 
+						value='<c:out value="${aluno.nomeSocial}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="2"><input type="text" id="email" name="email"
-						placeholder="E-mail" required></td>
-					<td colspan="2"> <input type="text" id="codCurso" name="codCurso" placeholder="Código do Curso" required> </td>
+						placeholder="E-mail" value='<c:out value="${aluno.email}"></c:out>'></td>
+					<td colspan="2"><input type="text" id="codCurso"
+						name="codCurso" placeholder="Código do Curso" 
+						value='<c:out value="${aluno.curso.codigo}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="1">
 						<div class="datas">
 							<label for="dataConclusao2Grau">Data de Conclusão</label> <input
-								type="date" id="dataConclusao2Grau" name="dataConclusao2Grau"
-								required>
+								type="date" id="dataConclusao2Grau" name="dataConclusao2Grau" 
+								value='<c:out value="${aluno.dataConclusao2Grau}"></c:out>'>
 						</div>
 					</td>
 					<td colspan="3"><input type="text"
 						id="instituicaoConclusao2Grau" name="instituicaoConclusao2Grau"
-						placeholder="Instituição de Conclusão 2º Grau" required></td>
+						placeholder="Instituição de Conclusão 2º Grau" 
+						value='<c:out value="${aluno.instituicao2Grau}"></c:out>'></td>
+				</tr>
+				<tr>
+					<td colspan="2"><input type="number" id="pontuacaoVestibular"
+						name="pontuacaoVestibular" placeholder="Pontuação Vestibular" 
+						value='<c:out value="${aluno.pontuacaoVestibular}"></c:out>'></td>
+					<td colspan="2"><input type="number" id="posicaoVestibular"
+						name="posicaoVestibular" placeholder="Posição Vestibular"
+						value='<c:out value="${aluno.posicaoVestibular}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="2"><input type="number" id="telefone1"
-						name="telefone1" placeholder="Telefone" required></td>
+						name="telefone1" placeholder="Telefone"></td>
 					<td colspan="2"><input type="number" id="telefone2"
 						name="telefone2" placeholder="Telefone"></td>
 				</tr>
 				<tr>
-					<td colspan="2"><input type="submit" id="cadastrar"
-						name="cadastrar" value="Cadastrar"></td>
-					<td colspan="2"><input type="submit" id="alterar"
-						name="alterar" value="Alterar"></td>
+					<td colspan="2"><input type="submit" id="botao" name="botao"
+						value="Cadastrar"></td>
+					<td colspan="2"><input type="submit" id="botao" name="botao"
+						value="Alterar"></td>
 				</tr>
 			</table>
 
 		</form>
+
+		<br />
+		<div align="center">
+			<c:if test="${not empty erro }">
+				<h2>
+					<b><c:out value="${erro }" /></b>
+				</h2>
+			</c:if>
+		</div>
+
+		<br />
+		<div align="center">
+			<c:if test="${not empty saida }">
+				<h3>
+					<b><c:out value="${saida }" /></b>
+				</h3>
+			</c:if>
+		</div>
 
 	</main>
 
