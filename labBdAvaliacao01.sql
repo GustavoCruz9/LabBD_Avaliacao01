@@ -1,4 +1,4 @@
-create database labBdAvaliacao01
+	create database labBdAvaliacao01
 go
 use labBdAvaliacao01
 go
@@ -72,7 +72,7 @@ Foreign key(codDisciplina) references Disciplina(codDisciplina)
 
 
 --PROCEDURE QUE VALIDA SE OCPF EXISTE OU É INVALIDO
-
+go
 create procedure sp_consultaCpf(@cpf char(11), @valido bit output)
 as
 --VARIAVEIS
@@ -162,7 +162,7 @@ end
 
 
 --PROCEDURE QUE VALIDA SE ALUNO TEM 16 ANOS OU MAIS
-
+go
 create procedure sp_validaIdade(@dataNascimento date, @validaIdade bit output)
 as
 	if(datediff(year, @dataNascimento, getdate()) >= 16)begin
@@ -174,7 +174,7 @@ as
 	end
 
 --PROCEDURE QUE CALCULA 5 ANSO DO ANO DE INGRESSSO
-
+go
 create function fn_anoLimite(@anoIngresso int)
 returns int
 as
@@ -185,19 +185,38 @@ begin
 end
 
 -- Funcao para criacao de RA
-create function fn_criaRa (@anoIngresso int, @semestreIngresso int, @rand1 int, @rand2 int, @rand3 int, @rand4 int)
-returns char(9)
-as
+--drop function fn_criaRa
+go
+create function fn_criaRa (@anoIngresso int, @semestreIngresso int, @random1 int, @random2 int, @random3 int, @random4 int)
+returns @tabela table (
+	statusRa	 bit,
+	ra			char(9)
+)
 begin
-    declare @ra char(9)
 
-    set @ra = cast(@anoIngresso as char(4)) + cast(@semestreIngresso as char(1)) + cast(@rand1 as char(1)) + cast(@rand2 as char(1)) + cast(@rand3 as char(1)) + cast(@rand4 as char(1))
+    declare @ra char(9),
+			@raExistente char(9)
+
+	set @raExistente = null
+
+	set @ra = cast(@anoIngresso as char(4)) + cast(@semestreIngresso as char(1)) + cast(@random1 as char(1)) + cast(@random2 as char(1)) + cast(@random3 as char(1)) + cast(@random4 as char(1))	
+
+	set @raExistente = (select ra from Aluno where ra = @ra)
+
+	if(@raExistente is null)
+	begin
+			insert into @tabela (statusRa, ra) values (1, @ra)
+	end
+	else
+	begin
+			insert into @tabela (statusRa, ra) values (0, @ra)
+	end
 	
-    return @ra
+    return 
 end
 
 --FUCNTION QUE CRIA O EMAIL CORPORATIVO
-
+go
 create function fn_criaEmailCorporativo(@nome varchar(150), @ra char(9))
 returns varchar (100)
 as
@@ -210,85 +229,124 @@ begin
 	return @nome
 end
 
+--PROCEDURE QUE VALIDA SE CPF É UNICO NO BANCO DE DADOS DO SISTEMA
+go
+create procedure sp_validaCpfDuplicado(@cpf char(11), @validaCpfDuplicado bit output)
+as
+	declare @cpfExistente char(11)
+
+	set @cpfExistente = null
+
+	set @cpfExistente = (select cpf from aluno where cpf = @cpf)
+
+	if(@cpfExistente is null)
+	begin
+		set @validaCpfDuplicado = 1
+	end
+	else
+	begin
+		set @validaCpfDuplicado = 0
+	end
+
 --PROCEDURE PARA INSERIR E ATUALIZAR ALUNO
 -- drop procedure sp_iuAluno
-
+go
 create procedure sp_iuAluno(@op char(1), @cpf char(11), @codCurso int, @nome varchar(150), @nomeSocial varchar(150), @dataNascimento date, @email varchar(100), @dataConclusao2Grau date,
 							@instituicao2Grau varchar(100), @pontuacaoVestibular int, @posicaoVestibular int, @anoIngresso int, @semestreIngresso int, @semestreLimite int, 
 						    @telefone1 varchar(11),  @telefone2 varchar(11), @saida varchar(100) output)
 as
 		declare @validaCpf bit
-
 		exec sp_consultaCpf @cpf, @validaCpf output 
 		if(@validaCpf = 1)
 		begin
-				declare @validaIdade bit
-				exec sp_validaIdade @dataNascimento, @validaIdade output
-				if(@validaIdade = 1)
+				declare @validarDuplicidadeCpf bit
+				exec sp_validaCpfDuplicado @cpf, @validarDuplicidadeCpf output
+				if(@validarDuplicidadeCpf = 1)
 				begin
-						if(upper(@op) = 'I')						
+			
+						declare @validaIdade bit
+						exec sp_validaIdade @dataNascimento, @validaIdade output
+						if(@validaIdade = 1)
 						begin
-								declare @random1 int,
-										@random2 int, 
-										@random3 int, 
-										@random4 int,
-										@ra char(9),
-										@emailCorporativo  varchar(100)
-
-								set @random1 = CAST(RAND() * 10 as int)
-								set @random2 = CAST(RAND() * 10 as int)
-								set @random3 = CAST(RAND() * 10 as int)
-								set @random4 = CAST(RAND() * 10 as int)
-
-								set @ra = (SELECT dbo.fn_criaRa(2024, 1, @random1, @random2, @random3, @random4) as ra)
-
-								set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
-
-								declare @anolimite int
-								set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
-								
-								insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
-														  @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
-
-								insert into Telefone (numero, cpf) values 
-									(@telefone1, @cpf)
-								
-								if @telefone2 is not null
-								begin 
-									insert into Telefone (numero, cpf) values
-										(@telefone2, @cpf)
-								end
-
-								set @saida = 'Aluno inserido com sucesso'
-						end
-						else
-								if(upper(@op) = 'U')
+								if(upper(@op) = 'I')						
 								begin
+										declare	@ra char(9),
+												@emailCorporativo varchar(100),
+												@random1 int,
+												@random2 int, 
+												@random3 int, 
+												@random4 int,
+												@status bit
+
+										set @status = 0
+
+										while(@status = 0)begin
 									
-									update Aluno
-									set nome = @nome, email = @email, nomeSocial = @nomeSocial 
-									where cpf = @cpf
+											set @random1 = CAST(RAND() * 10 as int)
+											set @random2 = CAST(RAND() * 10 as int)
+											set @random3 = CAST(RAND() * 10 as int)
+											set @random4 = CAST(RAND() * 10 as int)
 
+											set @status = (select statusRa from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+								
 
-									--Acho que esta errado
-									update Telefone
-									set numero = @telefone1
-									where numero = numero and cpf = @cpf
+										end
 
-									update Telefone
-									set numero = @telefone2
-									where numero = numero and cpf = @cpf
-									
-									set @saida = 'Aluno atualizado com sucesso'	
+										set @ra = (select ra from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+								
+
+										set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
+
+										declare @anolimite int
+										set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
+								
+										insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
+																 @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
+
+										insert into Telefone (numero, cpf) values 
+											(@telefone1, @cpf)
+
+										if @telefone2 is not null
+										begin 
+											insert into Telefone (numero, cpf) values
+											(@telefone2, @cpf)
+										end
+											
+										set @saida = 'Aluno inserido com sucesso'
 								end
 								else
-								begin
-									raiserror('Operação inválida', 16, 1)
-								end
+										if(upper(@op) = 'U')
+										begin
+									
+											update Aluno
+											set nome = @nome, email = @email, nomeSocial = @nomeSocial 
+											where cpf = @cpf
+
+
+											--Acho que esta errado
+											update Telefone
+											set numero = @telefone1
+											where numero = numero and cpf = @cpf
+
+											update Telefone
+											set numero = @telefone2
+											where numero = numero and cpf = @cpf
+									
+											set @saida = 'Aluno atualizado com sucesso'	
+										end
+										else
+										begin
+											raiserror('Operação inválida', 16, 1)
+										end
+						end
+						else
+						begin
+								raiserror('Idade inválida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
+						end
 				end
 				else
 				begin
-						raiserror('Idade inválida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
+					raiserror('CPF já cadastrado', 16, 1)
 				end
 		end
 		else
@@ -327,18 +385,12 @@ VALUES ('12345678901', '12345678901'),
 
 
 select * from Aluno where cpf = '41707740860'
-delete Aluno where cpf = '41707740860'
+delete Aluno where nome = 'Guilherme do Carmo Silveira'
 
-select a.nome, t.numero
-from Aluno a, Telefone t
-where a.cpf = t.cpf and a.cpf = '41707740860'
-
-select * from Telefone
-delete Telefone where cpf = '41707740860'
 --
 declare @saidaa varchar(100)
 exec sp_iuAluno 'I', '41707740860', 5, 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', '01-12-2023', 'Camargo Aranha', 100, 1, 2024, 1, 1, '11948574785',
-				/*null*/'11985693254', @saidaa output
+				'11985693254', @saidaa output
 print @saidaa
 
 insert into Aluno values ('41707740860', 5, '202415287', 'Guilherme Silveira', null,'28-01-2004', 'gui@gmail.com', '01-12-2023', 'guilherme.silveira5287@agis.com', 'Camargo Aranha', 100, 1, 2024, 1, 1, 2029, 'Vespertino')
@@ -351,6 +403,24 @@ set @random2 = CAST(RAND() * 10 as int)
 set @random3 = CAST(RAND() * 10 as int)
 set @random4 = CAST(RAND() * 10 as int)
 
-SELECT dbo.fn_criaRa(2024, 1, @random1, @random2, @random3, @random4) AS RA
+SELECT dbo.fn_criaRa(2024, 1) AS RA
 
 select dbo.fn_criaEmailCorporativo('Gustavo da Cruz santos', '202411234') as emailCorp
+
+
+declare @saida bit
+exec sp_validaCpfDuplicado '41707740865', @saida output
+print @saida
+
+select numero from telefone where cpf = '41707740860'
+select * from telefone
+delete Telefone
+
+select a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular,
+	   a.posicaoVestibular, a.anoIngresso, a.semestreIngresso, a.anoIngresso, a.anoLimite
+from Aluno a, Telefone t 
+where a.cpf = t.cpf and a.cpf = '4170774080'
+
+--fucntion criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
+--procedure valida se o cpf ja existe na base de daods foi criada
+--procedure sp_iuAluno foi atualizada com a chamada da proceudre de verificação de duplicidade do cpf 
