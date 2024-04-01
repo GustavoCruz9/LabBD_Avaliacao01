@@ -46,10 +46,10 @@
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <input type="submit" id="botao1" name="botao1" value="Cadastrar">
+                        <input type="submit" id="botao" name="botao" value="Cadastrar">
                     </td>
                     <td colspan="2">
-                        <input type="submit" id="botao2" name="botao2" value="Alterar">
+                        <input type="submit" id="botao" name="botao" value="Alterar">
                     </td>
                 </tr>
             </table>

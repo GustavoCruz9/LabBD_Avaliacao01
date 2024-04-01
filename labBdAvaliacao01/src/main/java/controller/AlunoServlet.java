@@ -46,8 +46,6 @@ public class AlunoServlet extends HttpServlet {
 		String instituicaoConclusao2Grau = request.getParameter("instituicaoConclusao2Grau");
 		String pontuacaoVestibular = request.getParameter("pontuacaoVestibular");
 		String posicaoVestibular = request.getParameter("posicaoVestibular");
-		String telefone1 = request.getParameter("telefone1");
-		String telefone2 = request.getParameter("telefone2");
 		
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -93,12 +91,19 @@ public class AlunoServlet extends HttpServlet {
 			a.setPontuacaoVestibular(Integer.parseInt(pontuacaoVestibular));
 			a.setPosicaoVestibular(Integer.parseInt(posicaoVestibular));
 			
-			Telefone tel = new Telefone();
-			
-			tel.setNumero(telefone1);
-			a.setTelefone1(tel);
-			tel.setNumero(telefone2);
-			a.setTelefone2(tel);
+//			Telefone [] telefones = new Telefone[2];
+//			Telefone tel = new Telefone();
+//			tel.setNumero(telefone1);
+//			
+//			telefones[0] = tel;
+//			
+//			tel = new Telefone();
+//			tel.setNumero(telefone2);
+//			
+//			telefones[1] = tel;
+//			a.setTelefones(telefones);
+//			
+
 			
 		}else if(cmd.contains("Buscar")) {
 			a.setCpf(cpf);

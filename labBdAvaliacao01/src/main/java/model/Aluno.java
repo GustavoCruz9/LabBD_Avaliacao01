@@ -1,6 +1,8 @@
 package model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +29,7 @@ public class Aluno {
 	private int semestreIngresso;
 	private int anoLimite;
 	private int semestreLimite;
-	private Telefone telefone1;
-	private Telefone telefone2;
+	List<Telefone> telefones = new ArrayList<>();
+
 	
 }

@@ -36,10 +36,10 @@
 						<th class="lista">Inst. 2º Grau</th>
 						<th class="lista">Pont. Vest.</th>
 						<th class="lista">Pos. Vest.</th>
-						<th class="lista">Ano de ingresso</th>
-						<th class="lista">Semestre de ingresso</th>
-						<th class="lista">Ano Limite</th>
-						<th class="lista">Semestre Limite</th>
+						<th class="lista">Ano/Sem. Ingresso</th>
+						<th class="lista">Ano/Sem. Limite</th>
+						<th class="lista">Tel. 1</th>
+						<th class="lista">Tel. 2</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -57,10 +57,10 @@
 							<td><c:out value="${a.instituicao2Grau}"></c:out>
 							<td><c:out value="${a.pontuacaoVestibular}"></c:out>
 							<td><c:out value="${a.posicaoVestibular}"></c:out>
-							<td><c:out value="${a.anoIngresso}"></c:out>
-							<td><c:out value="${a.semestreIngresso}"></c:out>
-							<td><c:out value="${a.anoLimite}"></c:out>
-							<td><c:out value="${a.semestreLimite}"></c:out>
+							<td><c:out value="${a.anoIngresso}${-a.semestreIngresso}"></c:out>
+							<td><c:out value="${a.anoLimite}${-a.semestreLimite}"></c:out>
+							<td><c:out value="${a.telefones[1].numero}"></c:out>
+							<td><c:out value="${a.telefones[0].numero}"></c:out>
 						</tr>
 					</c:forEach>
 				</tbody>

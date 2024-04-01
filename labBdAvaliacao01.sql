@@ -253,100 +253,84 @@ as
 go
 create procedure sp_iuAluno(@op char(1), @cpf char(11), @codCurso int, @nome varchar(150), @nomeSocial varchar(150), @dataNascimento date, @email varchar(100), @dataConclusao2Grau date,
 							@instituicao2Grau varchar(100), @pontuacaoVestibular int, @posicaoVestibular int, @anoIngresso int, @semestreIngresso int, @semestreLimite int, 
-						    @telefone1 varchar(11),  @telefone2 varchar(11), @saida varchar(100) output)
+							@saida varchar(100) output)
 as
 		declare @validaCpf bit
 		exec sp_consultaCpf @cpf, @validaCpf output 
 		if(@validaCpf = 1)
 		begin
-				declare @validarDuplicidadeCpf bit
-				exec sp_validaCpfDuplicado @cpf, @validarDuplicidadeCpf output
-				if(@validarDuplicidadeCpf = 1)
+				
+				declare @validaIdade bit
+				exec sp_validaIdade @dataNascimento, @validaIdade output
+				if(@validaIdade = 1)
 				begin
-			
-						declare @validaIdade bit
-						exec sp_validaIdade @dataNascimento, @validaIdade output
-						if(@validaIdade = 1)
+						if(upper(@op) = 'I')						
 						begin
-								if(upper(@op) = 'I')						
+
+								declare @validarDuplicidadeCpf bit
+								exec sp_validaCpfDuplicado @cpf, @validarDuplicidadeCpf output
+								if(@validarDuplicidadeCpf = 1)
 								begin
-										declare	@ra char(9),
-												@emailCorporativo varchar(100),
-												@random1 int,
-												@random2 int, 
-												@random3 int, 
-												@random4 int,
-												@status bit
+											declare	@ra char(9),
+													@emailCorporativo varchar(100),
+													@random1 int,
+													@random2 int, 
+													@random3 int, 
+													@random4 int,
+													@status bit
 
-										set @status = 0
+											set @status = 0
 
-										while(@status = 0)begin
+											while(@status = 0)begin
 									
-											set @random1 = CAST(RAND() * 10 as int)
-											set @random2 = CAST(RAND() * 10 as int)
-											set @random3 = CAST(RAND() * 10 as int)
-											set @random4 = CAST(RAND() * 10 as int)
+												set @random1 = CAST(RAND() * 10 as int)
+												set @random2 = CAST(RAND() * 10 as int)
+												set @random3 = CAST(RAND() * 10 as int)
+												set @random4 = CAST(RAND() * 10 as int)
 
-											set @status = (select statusRa from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+												set @status = (select statusRa from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+								
+											end
+
+											set @ra = (select ra from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
 								
 
-										end
+											set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
 
-										set @ra = (select ra from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+											declare @anolimite int
+											set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
 								
-
-										set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
-
-										declare @anolimite int
-										set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
-								
-										insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
+											insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
 																 @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
 
-										insert into Telefone (numero, cpf) values 
-											(@telefone1, @cpf)
-
-										if @telefone2 is not null
-										begin 
-											insert into Telefone (numero, cpf) values
-											(@telefone2, @cpf)
-										end
 											
-										set @saida = 'Aluno inserido com sucesso'
+											set @saida = 'Aluno inserido com sucesso'
 								end
 								else
-										if(upper(@op) = 'U')
-										begin
-									
-											update Aluno
-											set nome = @nome, email = @email, nomeSocial = @nomeSocial 
-											where cpf = @cpf
-
-
-											--Acho que esta errado
-											update Telefone
-											set numero = @telefone1
-											where numero = numero and cpf = @cpf
-
-											update Telefone
-											set numero = @telefone2
-											where numero = numero and cpf = @cpf
-									
-											set @saida = 'Aluno atualizado com sucesso'	
-										end
-										else
-										begin
-											raiserror('Operação inválida', 16, 1)
-										end
+								begin
+											raiserror('CPF já cadastrado', 16, 1)
+								end
 						end
 						else
-						begin
-								raiserror('Idade inválida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
-						end
+							if(upper(@op) = 'U')
+							begin
+									
+									update Aluno
+									set nome = @nome, dataNascimento = @dataNascimento, nomeSocial = @nomeSocial, email = @email, codCurso = @codCurso, dataConclusao2Grau = @dataConclusao2Grau, 
+									instituicao2Grau = @instituicao2Grau, pontuacaoVestibular = @pontuacaoVestibular, posicaoVestibular = @posicaoVestibular
+									where cpf = @cpf
+
+										
+									set @saida = 'Aluno atualizado com sucesso'	
+							end
+							else
+							begin
+									raiserror('Operação inválida', 16, 1)
+							end
 				end
 				else
 				begin
-					raiserror('CPF já cadastrado', 16, 1)
+						raiserror('Idade inválida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
 				end
 		end
 		else
@@ -369,11 +353,11 @@ VALUES (1, 'Engenharia da Computação', 4000, 'ECO', 4),
 
 -- Inserções na tabela Aluno
 INSERT INTO Aluno (cpf, codCurso, ra, nome, dataNascimento, email, dataConclusao2Grau, emailCorporativo, instituicao2Grau, pontuacaoVestibular, posicaoVestibular, anoIngresso, semestreIngresso, semestreLimite, anoLimite, turno)
-VALUES ('12345678901', 1, 'RA123456', 'João da Silva', '1995-03-15', 'joao@gmail.com', '2013-12-31', 'joao@empresa.com', 'Escola X', 700, 50, 2020, 1, 10, 2025, 'Manhã'),
-       ('98765432109', 2, 'RA987654', 'Maria Oliveira', '1998-07-20', 'maria@gmail.com', '2016-06-30', 'maria@empresa.com', 'Escola Y', 720, 40, 2019, 2, 9, 2024, 'Tarde'),
-       ('55555555555', 3, 'RA555555', 'Ana Souza', '2000-10-05', 'ana@gmail.com', '2018-12-31', 'ana@empresa.com', 'Escola Z', 680, 60, 2022, 1, 8, 2027, 'Noite'),
-       ('11111111111', 4, 'RA111111', 'Pedro Santos', '1997-09-25', 'pedro@gmail.com', '2015-07-31', 'pedro@empresa.com', 'Escola W', 740, 30, 2017, 2, 9, 2022, 'Tarde'),
-       ('99999999999', 5, 'RA999999', 'Juliana Lima', '1996-12-10', 'juliana@gmail.com', '2014-12-31', 'juliana@empresa.com', 'Escola V', 710, 45, 2015, 1, 8, 2020, 'Manhã');
+VALUES ('12345678901', 1, 'RA123456', 'João da Silva', '1995-03-15', 'joao@gmail.com', '2013-12-31', 'joao@empresa.com', 'Escola X', 700, 50, 2020, 1, 1, 2025, 'Manhã'),
+       ('98765432109', 2, 'RA987654', 'Maria Oliveira', '1998-07-20', 'maria@gmail.com', '2016-06-30', 'maria@empresa.com', 'Escola Y', 720, 40, 2019, 2, 2, 2024, 'Tarde'),
+       ('55555555555', 3, 'RA555555', 'Ana Souza', '2000-10-05', 'ana@gmail.com', '2018-12-31', 'ana@empresa.com', 'Escola Z', 680, 60, 2022, 1, 2, 2027, 'Noite'),
+       ('11111111111', 4, 'RA111111', 'Pedro Santos', '1997-09-25', 'pedro@gmail.com', '2015-07-31', 'pedro@empresa.com', 'Escola W', 740, 30, 2017, 2, 2, 2022, 'Tarde'),
+       ('99999999999', 5, 'RA999999', 'Juliana Lima', '1996-12-10', 'juliana@gmail.com', '2014-12-31', 'juliana@empresa.com', 'Escola V', 710, 45, 2015, 1, 1, 2020, 'Manhã');
 
 -- Inserções na tabela Telefone
 INSERT INTO Telefone (numero, cpf)
@@ -385,7 +369,7 @@ VALUES ('12345678901', '12345678901'),
 
 
 select * from Aluno where cpf = '41707740860'
-delete Aluno where nome = 'Guilherme do Carmo Silveira'
+delete Aluno where  nome = 'Guilherme do Carmo Silveira'
 
 --
 declare @saidaa varchar(100)
@@ -414,13 +398,38 @@ print @saida
 
 select numero from telefone where cpf = '41707740860'
 select * from telefone
-delete Telefone
+delete Telefone where cpf = '41707740860'
 
 select a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular,
 	   a.posicaoVestibular, a.anoIngresso, a.semestreIngresso, a.anoIngresso, a.anoLimite
 from Aluno a, Telefone t 
 where a.cpf = t.cpf and a.cpf = '4170774080'
 
---fucntion criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
+select a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular,
+       a.posicaoVestibular, a.anoIngresso, a.semestreIngresso, a.anoIngresso, a.anoLimite, t.numero
+from Aluno a, Telefone t
+where a.cpf = t.cpf and a.cpf = '41707740860'
+
+select * from Aluno a, Telefone t where a.cpf  = t.cpf 
+
+
+select numero, cpf from Telefone order by cpf
+select * from Telefone
+
+
+SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, 
+	a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso, 
+    a.semestreIngresso, a.anoIngresso, a.anoLimite, a.semestreLimite,
+	(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2,
+    (SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1
+	FROM Aluno a
+
+
+select cpf, codCurso, ra, nome, nomeSocial, dataNascimento, email, emailCorporativo, 
+				dataConclusao2Grau, instituicao2Grau, pontuacaoVestibular,posicaoVestibular
+				from Aluno where cpf = '41707740860'
+
+
+--function criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
 --procedure valida se o cpf ja existe na base de daods foi criada
 --procedure sp_iuAluno foi atualizada com a chamada da proceudre de verificação de duplicidade do cpf 

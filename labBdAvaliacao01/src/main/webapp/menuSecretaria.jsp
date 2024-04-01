@@ -73,12 +73,6 @@
 						value='<c:out value="${aluno.posicaoVestibular}"></c:out>'></td>
 				</tr>
 				<tr>
-					<td colspan="2"><input type="number" id="telefone1"
-						name="telefone1" placeholder="Telefone"></td>
-					<td colspan="2"><input type="number" id="telefone2"
-						name="telefone2" placeholder="Telefone"></td>
-				</tr>
-				<tr>
 					<td colspan="2"><input type="submit" id="botao" name="botao"
 						value="Cadastrar"></td>
 					<td colspan="2"><input type="submit" id="botao" name="botao"

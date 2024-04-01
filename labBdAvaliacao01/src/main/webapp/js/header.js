@@ -4,7 +4,7 @@ const template = document.createElement('template');
 template.innerHTML = `
     <header>
         <div class="logo">
-            <a href="./index.jsp"><img src="./images/LogoAGIS.png" alt="Logo"></a>
+            <a href="/index.jsp"><img src="./images/LogoAGIS.png" alt="Logo"></a>
         </div>
         <nav>
             <ul>
@@ -14,6 +14,7 @@ template.innerHTML = `
                         <option value="cadastrar"><a href="#">Cadastrar</a></option>
                         <option value="alterar"><a href="#">Alterar</a></option>
                         <option value="vizualizar"><a href="#">Vizualizar</a></option>
+                        <option value="telefone"><a href="#">Telefone</a></option>
                     </select>
                 </li>
                 <li>

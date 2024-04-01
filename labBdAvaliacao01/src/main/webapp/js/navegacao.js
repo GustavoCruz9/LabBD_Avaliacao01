@@ -1,7 +1,8 @@
 var urlsAluno = {
     "cadastrar": "menuSecretaria.jsp",
     "alterar": "menuSecretaria.jsp",
-    "vizualizar": "vizualizarAlunos.jsp"
+    "vizualizar": "vizualizarAlunos.jsp",
+    "telefone" : "cadastrarTelefone.jsp"
 };
 
 // Objeto para mapear opções selecionadas para URLs de selectDisciplina

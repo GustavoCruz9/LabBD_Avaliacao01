@@ -23,35 +23,21 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 	}
 
 	@Override
-	public void inserir(Aluno a) throws SQLException, ClassNotFoundException {
-		GenericDao gDao = new GenericDao();
-		AlunoDao aDao = new AlunoDao(gDao);
-		aDao.iuAluno("I", a);
-	}
-
-	@Override
-	public void atualizar(Aluno a) throws SQLException, ClassNotFoundException {
-		GenericDao gDao = new GenericDao();
-		AlunoDao aDao = new AlunoDao(gDao);
-		aDao.iuAluno("U", a);
-	}
-
-	@Override
 	public Aluno consultar(Aluno a) throws SQLException, ClassNotFoundException {
 		Connection c = gDao.getConnection();
-		String sql = "select * from Aluno where cpf = ?";
+		String sql = """
+				select cpf, codCurso, ra, nome, nomeSocial, dataNascimento, email, emailCorporativo,
+				dataConclusao2Grau, instituicao2Grau, pontuacaoVestibular,posicaoVestibular
+				from Aluno where cpf = ?
+				""";
 		PreparedStatement ps = c.prepareStatement(sql);
 		ps.setString(1, a.getCpf());
 
 		ResultSet rs = ps.executeQuery();
+		Curso cu = new Curso();
 
-		if (rs.next()) {
-			
-			Curso cu = new Curso();
-			Telefone t = new Telefone();
+		while (rs.next()) {
 
-			
-			
 			a.setCpf(rs.getString("cpf"));
 			cu.setCodigo(rs.getInt("codCurso"));
 			a.setCurso(cu);
@@ -63,7 +49,6 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 			a.setDataNascimento(dataNasc.toLocalDate());
 
 			a.setEmail(rs.getString("email"));
-			a.setEmailCorporativo(rs.getString("emailCorporativo"));
 
 			Date dataConclusao2Grau = rs.getDate("dataConclusao2Grau");
 			a.setDataConclusao2Grau(dataConclusao2Grau.toLocalDate());
@@ -71,16 +56,7 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 			a.setInstituicao2Grau(rs.getString("instituicao2Grau"));
 			a.setPontuacaoVestibular(rs.getInt("pontuacaoVestibular"));
 			a.setPosicaoVestibular(rs.getInt("PosicaoVestibular"));
-			;
-			a.setAnoIngresso(rs.getInt("anoIngresso"));
-			a.setSemestreIngresso(rs.getInt("semestreIngresso"));
-			a.setAnoIngresso(rs.getInt("semestreLimite"));
-			a.setAnoLimite(rs.getInt("anoLimite"));
-//			
-//			t.setNumero((rs.getString("telefone1")));
-//			a.setTelefone1(t);
-//			t.setNumero((rs.getString("telefone2")));
-//			a.setTelefone2(t);
+
 		}
 
 		rs.close();
@@ -95,7 +71,15 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 		List<Aluno> alunos = new ArrayList<>();
 
 		Connection c = gDao.getConnection();
-		String sql = "select * from Aluno";
+		String sql = """
+				SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo,
+				a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso,
+				a.semestreIngresso, a.anoIngresso, a.anoLimite, a.semestreLimite,
+				(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2,
+				(SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1
+				FROM Aluno a
+				""";
+
 		PreparedStatement ps = c.prepareStatement(sql);
 
 		ResultSet rs = ps.executeQuery();
@@ -104,8 +88,12 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 
 			Aluno a = new Aluno();
 			Curso cu = new Curso();
-			Telefone t = new Telefone();
 
+			Telefone[] telefones = new Telefone[2];
+
+			for (int x = 0; x < 2; x++) {
+				telefones[x] = new Telefone();
+			}
 
 			a.setCpf(rs.getString("cpf"));
 			cu.setCodigo(rs.getInt("codCurso"));
@@ -126,15 +114,16 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 			a.setInstituicao2Grau(rs.getString("instituicao2Grau"));
 			a.setPontuacaoVestibular(rs.getInt("pontuacaoVestibular"));
 			a.setPosicaoVestibular(rs.getInt("PosicaoVestibular"));
-			
+
 			a.setAnoIngresso(rs.getInt("anoIngresso"));
 			a.setSemestreIngresso(rs.getInt("semestreIngresso"));
-			a.setAnoIngresso(rs.getInt("semestreLimite"));
+			a.setSemestreLimite(rs.getInt("semestreLimite"));
 			a.setAnoLimite(rs.getInt("anoLimite"));
-//			t.setNumero((rs.getString("telefone1")));
-//			a.setTelefone1(t);
-//			t.setNumero((rs.getString("telefone2")));
-//			a.setTelefone2(t);
+
+//			telefones[0].setNumero(rs.getString("telefone2"));
+//			telefones[1].setNumero(rs.getString("telefone1"));
+//
+//			a.setTelefones(telefones);
 
 			alunos.add(a);
 		}
@@ -149,7 +138,7 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 	@Override
 	public String iuAluno(String acao, Aluno a) throws SQLException, ClassNotFoundException {
 		Connection C = gDao.getConnection();
-		String sql = "{CALL sp_iuAluno (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+		String sql = "{CALL sp_iuAluno (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 		CallableStatement cs = C.prepareCall(sql);
 		cs.setString(1, acao);
 		cs.setString(2, a.getCpf());
@@ -165,16 +154,17 @@ public class AlunoDao implements ICrud<Aluno>, IAluno {
 		cs.setInt(12, a.getAnoIngresso());
 		cs.setInt(13, a.getSemestreIngresso());
 		cs.setInt(14, a.getSemestreLimite());
-		cs.setString(15, a.getTelefone1().getNumero());
-		cs.setString(16, a.getTelefone2().getNumero());
-		cs.registerOutParameter(17, Types.VARCHAR);
+//		Telefone[] telefones = a.getTelefones();
+//		cs.setString(15, telefones[0].getNumero());
+//		cs.setString(16, telefones[1].getNumero());
+		cs.registerOutParameter(15, Types.VARCHAR);
 
 		cs.execute();
-		String saida = cs.getString(17);
+		String saida = cs.getString(15);
 
 		cs.close();
 		C.close();
-		
+
 		return saida;
 	}
 }
