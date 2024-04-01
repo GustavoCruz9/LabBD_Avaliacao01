@@ -14,7 +14,7 @@ import model.Aluno;
 import model.Curso;
 import model.Telefone;
 
-public class AlunoDao implements ICrud<Aluno>, IAluno {
+public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 
 	private GenericDao gDao;
 

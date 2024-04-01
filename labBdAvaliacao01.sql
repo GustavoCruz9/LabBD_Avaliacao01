@@ -1,4 +1,7 @@
-	create database labBdAvaliacao01
+ï»¿-- use master
+-- drop database labBdAvaliacao01
+
+create database labBdAvaliacao01
 go
 use labBdAvaliacao01
 go
@@ -71,7 +74,7 @@ Foreign key(codDisciplina) references Disciplina(codDisciplina)
 )
 
 
---PROCEDURE QUE VALIDA SE OCPF EXISTE OU É INVALIDO
+--PROCEDURE QUE VALIDA SE OCPF EXISTE OU ï¿½ INVALIDO
 go
 create procedure sp_consultaCpf(@cpf char(11), @valido bit output)
 as
@@ -84,7 +87,7 @@ as
 
 --verifica se cpf tem 11 digitos
 if(LEN(@cpf) = 11)begin
-	--VERIFICAÇÃO DE DIGITOS REPETIDOS
+	--VERIFICAï¿½ï¿½O DE DIGITOS REPETIDOS
 	while(@i < 10) begin
 		if(SUBSTRING(@cpf, 1,1) = SUBSTRING(@cpf, @x, 1)) begin
 			set @status = @status + 1
@@ -117,7 +120,7 @@ if(LEN(@cpf) = 11)begin
 			set @primeiroDigito = 11 - @valorDividido
 		end
 
-		-- verifica se o digito descoberto é igual o inserido
+		-- verifica se o digito descoberto ï¿½ igual o inserido
 
 		if(CAST(SUBSTRING(@cpf, 10,1)as int) = @primeiroDigito) begin
 			--descobrindo segundo digito
@@ -153,11 +156,11 @@ if(LEN(@cpf) = 11)begin
 		end
 
 	end else begin
-		raiserror('CPF invalido, todos os digitos são iguais', 16, 1)
+		raiserror('CPF invalido, todos os digitos sï¿½o iguais', 16, 1)
 	end
 
 end else begin
-	raiserror('CPF invalido, número de caracteres incorreto', 16, 1)
+	raiserror('CPF invalido, nï¿½mero de caracteres incorreto', 16, 1)
 end
 
 
@@ -229,7 +232,7 @@ begin
 	return @nome
 end
 
---PROCEDURE QUE VALIDA SE CPF É UNICO NO BANCO DE DADOS DO SISTEMA
+--PROCEDURE QUE VALIDA SE CPF ï¿½ UNICO NO BANCO DE DADOS DO SISTEMA
 go
 create procedure sp_validaCpfDuplicado(@cpf char(11), @validaCpfDuplicado bit output)
 as
@@ -308,7 +311,7 @@ as
 								end
 								else
 								begin
-											raiserror('CPF já cadastrado', 16, 1)
+											raiserror('CPF jï¿½ cadastrado', 16, 1)
 								end
 						end
 						else
@@ -325,41 +328,94 @@ as
 							end
 							else
 							begin
-									raiserror('Operação inválida', 16, 1)
+									raiserror('Operaï¿½ï¿½o invï¿½lida', 16, 1)
 							end
 				end
 				else
 				begin
-						raiserror('Idade inválida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
+						raiserror('Idade invï¿½lida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
 				end
 		end
 		else
 		begin
-			raiserror('CPF Inválido, verifique e tente novamente.', 16, 1)
+			raiserror('CPF Invï¿½lido, verifique e tente novamente.', 16, 1)
 		end
 
-								  
+--Procedure sp_iudTelefone	
+-- drop procedure sp_iudTelefone
+create procedure sp_iudTelefone(@op char(1), @cpf char(11), @telefoneAntigo char(11) null, @telefoneNovo char(11), 
+								@saida  varchar(150) output)
+as
+		declare @validarExistenciaCpf bit
+		exec sp_validaCpfDuplicado @cpf, @validarExistenciaCpf output
+		if(@validarExistenciaCpf = 0)
+		begin
+				if(upper(@op) = 'U')
+				begin
+						if(LEN(@telefoneAntigo) = 11 and LEN(@telefoneNovo) = 11)
+						begin
 
+							update Telefone set numero = @telefoneNovo where cpf = @cpf and numero = @telefoneAntigo
 
+							set @saida = 'Telefone atualizado com sucesso'
+
+						end
+						else
+						begin
+							raiserror('tamanho de telefone incorreto', 16, 1)
+						end
+				end
+				else
+						if(upper(@op) = 'D')
+						begin
+								begin try
+
+									delete Telefone where cpf = @cpf and numero = @telefoneNovo
+
+									set @saida = 'Telefone excluido com sucesso'
+
+								end try
+								begin catch
+										raiserror('Telefone inexistente ou invalidado', 16, 1)
+								end catch
+						end
+						else
+								if(upper(@op) = 'I')
+								begin
+										insert into Telefone (cpf, numero) values (@cpf, @telefoneNovo)
+
+										set @saida = 'Telefone cadastrado com sucesso'
+								end
+								else
+								begin
+										raiserror('OperaÃ§Ã£o invÃ¡lida', 16, 1)
+								end
+		end
+		else
+		begin
+				raiserror('O CPF nÃ£o existe na base de dados do sistema', 16, 1)
+		end
+						  
 -- testes
 
--- Inserções na tabela Curso
+
+-- Inserï¿½ï¿½es na tabela Curso
 INSERT INTO Curso (codCurso, nome, cargaHoraria, sigla, notaEnade)
-VALUES (1, 'Engenharia da Computação', 4000, 'ECO', 4),
-       (2, 'Administração', 3200, 'ADM', 5),
+VALUES (1, 'Engenharia da Computaï¿½ï¿½o', 4000, 'ECO', 4),
+       (2, 'Administraï¿½ï¿½o', 3200, 'ADM', 5),
        (3, 'Direito', 3600, 'DIR', 3),
        (4, 'Medicina', 6000, 'MED', 5),
-       (5, 'Ciência da Computação', 3800, 'CIC', 4);
+       (5, 'Ciï¿½ncia da Computaï¿½ï¿½o', 3800, 'CIC', 4);
 
--- Inserções na tabela Aluno
+-- Inserï¿½ï¿½es na tabela Aluno
 INSERT INTO Aluno (cpf, codCurso, ra, nome, dataNascimento, email, dataConclusao2Grau, emailCorporativo, instituicao2Grau, pontuacaoVestibular, posicaoVestibular, anoIngresso, semestreIngresso, semestreLimite, anoLimite, turno)
-VALUES ('12345678901', 1, 'RA123456', 'João da Silva', '1995-03-15', 'joao@gmail.com', '2013-12-31', 'joao@empresa.com', 'Escola X', 700, 50, 2020, 1, 1, 2025, 'Manhã'),
+VALUES ('12345678901', 1, 'RA123456', 'Joï¿½o da Silva', '1995-03-15', 'joao@gmail.com', '2013-12-31', 'joao@empresa.com', 'Escola X', 700, 50, 2020, 1, 1, 2025, 'Manhï¿½'),
        ('98765432109', 2, 'RA987654', 'Maria Oliveira', '1998-07-20', 'maria@gmail.com', '2016-06-30', 'maria@empresa.com', 'Escola Y', 720, 40, 2019, 2, 2, 2024, 'Tarde'),
        ('55555555555', 3, 'RA555555', 'Ana Souza', '2000-10-05', 'ana@gmail.com', '2018-12-31', 'ana@empresa.com', 'Escola Z', 680, 60, 2022, 1, 2, 2027, 'Noite'),
        ('11111111111', 4, 'RA111111', 'Pedro Santos', '1997-09-25', 'pedro@gmail.com', '2015-07-31', 'pedro@empresa.com', 'Escola W', 740, 30, 2017, 2, 2, 2022, 'Tarde'),
-       ('99999999999', 5, 'RA999999', 'Juliana Lima', '1996-12-10', 'juliana@gmail.com', '2014-12-31', 'juliana@empresa.com', 'Escola V', 710, 45, 2015, 1, 1, 2020, 'Manhã');
+       ('99999999999', 5, 'RA999999', 'Juliana Lima', '1996-12-10', 'juliana@gmail.com', '2014-12-31', 'juliana@empresa.com', 'Escola V', 710, 45, 2015, 1, 1, 2020, 'Manhï¿½');
 
--- Inserções na tabela Telefone
+-- Inserï¿½ï¿½es na tabela Telefone
 INSERT INTO Telefone (numero, cpf)
 VALUES ('12345678901', '12345678901'),
        ('98765432109', '98765432109'),
@@ -398,7 +454,7 @@ print @saida
 
 select numero from telefone where cpf = '41707740860'
 select * from telefone
-delete Telefone where cpf = '41707740860'
+delete Telefone where cpf = '41707740860'and numero = ''
 
 select a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular,
 	   a.posicaoVestibular, a.anoIngresso, a.semestreIngresso, a.anoIngresso, a.anoLimite
@@ -432,4 +488,4 @@ select cpf, codCurso, ra, nome, nomeSocial, dataNascimento, email, emailCorporat
 
 --function criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
 --procedure valida se o cpf ja existe na base de daods foi criada
---procedure sp_iuAluno foi atualizada com a chamada da proceudre de verificação de duplicidade do cpf 
+--procedure sp_iuAluno foi atualizada com a chamada da proceudre de verificaï¿½ï¿½o de duplicidade do cpf 

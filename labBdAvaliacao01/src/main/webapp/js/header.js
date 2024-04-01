@@ -4,7 +4,7 @@ const template = document.createElement('template');
 template.innerHTML = `
     <header>
         <div class="logo">
-            <a href="/index.jsp"><img src="./images/LogoAGIS.png" alt="Logo"></a>
+            <a href="./index.jsp"><img src="./images/LogoAGIS.png" alt="Logo"></a>
         </div>
         <nav>
             <ul>
