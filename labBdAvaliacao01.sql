@@ -49,7 +49,7 @@ codCurso		int				not null,
 nome			varchar(100)	not null,
 horasSemanais	int				not null,
 horaInicio		time(7)			not null,
-diaSemana		date			not null
+diaSemana		varchar(15)		not null
 Primary key(codDisciplina)
 Foreign key(codCurso) references Curso(codCurso)
 )
@@ -395,11 +395,53 @@ as
 		begin
 				raiserror('O CPF não existe na base de dados do sistema', 16, 1)
 		end
-						  
+
+--FUNCTION FN_REALIZARMATRICULA
+--drop function fn_realizaMatricula
+create function fn_realizaMatricula(@ra char(9))
+returns @tabela table (
+	diaSemana	varchar(15),
+	codDisciplina	int,
+	disciplina	varchar(100),
+	horasSemanais	int,
+	horaInicio		time(4),
+	statusMatricula	varchar(20)
+)
+begin
+	
+		declare @codCurso int
+
+		set @codCurso = (select codCurso from aluno where ra = @ra)
+
+		insert into @tabela (diaSemana, codDisciplina, disciplina, horasSemanais, horaInicio, statusMatricula)
+					select d.diaSemana, d.codDisciplina, d.nome, d.horasSemanais, convert(varchar(5), d.horaInicio, 108) as horaInicio, 'não matriculado' as statusMatricula
+					from Disciplina d left outer join Matricula m on d.codDisciplina = m.codDisciplina
+					where m.cpf is null and d.codCurso = @codCurso
+	
+		insert into @tabela (diaSemana, codDisciplina, disciplina, horasSemanais, horaInicio, statusMatricula)
+					select d.diaSemana, d.codDisciplina, d.nome, d.horasSemanais, convert(varchar(5), d.horaInicio, 108) as horaInicio , m.statusMatricula
+					from Disciplina d, Matricula m
+					left join Matricula m1 on m1.cpf = m.cpf
+							  and m1.codDisciplina = m.codDisciplina
+							  and m1.anoSemestre > m.anoSemestre
+							  and m1.statusMatricula = 'Aprovado'
+					where d.codCurso = 1 and
+						  m.statusMatricula = 'Reprovado'
+						  and m1.anoSemestre is null and 
+						  d.codDisciplina = m.codDisciplina
+
+		return
+
+end		
+
+select diaSemana, codDisciplina, disciplina, horasSemanais, convert(varchar(5), horaInicio, 108) as horaInicio, statusMatricula
+ from fn_realizaMatricula('202416328')
+	  
 -- testes
 
 
 -- Inser��es na tabela Curso
+
 INSERT INTO Curso (codCurso, nome, cargaHoraria, sigla, notaEnade)
 VALUES (1, 'Engenharia da Computa��o', 4000, 'ECO', 4),
        (2, 'Administra��o', 3200, 'ADM', 5),
@@ -476,8 +518,8 @@ select * from Telefone
 SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, 
 	a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso, 
     a.semestreIngresso, a.anoIngresso, a.anoLimite, a.semestreLimite,
-	(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2,
-    (SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1
+	(SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1,
+	(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2
 	FROM Aluno a
 
 
@@ -485,7 +527,29 @@ select cpf, codCurso, ra, nome, nomeSocial, dataNascimento, email, emailCorporat
 				dataConclusao2Grau, instituicao2Grau, pontuacaoVestibular,posicaoVestibular
 				from Aluno where cpf = '41707740860'
 
+INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
+VALUES 
+(1, 1, 'Programação I', 4, '08:00:00', 'Segunda-feira'),
+(2, 1, 'Programação II', 4, '08:00:00', 'Quarta-feira'),
+(3, 1, 'Banco de Dados', 3, '10:00:00', 'Terça-feira'),
+(4, 1, 'Engenharia de Software', 4, '10:00:00', 'Quinta-feira');
 
+INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
+(20241, '41707740860', 1, 'Pendente'),
+(20241, '41707740860', 4, 'Reprovado')
+
+INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
+(20242, '41707740860', 4, 'Aprovado')
+
+INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
+(20241, '41707740860', 3, 'Reprovado')
+
+INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
+VALUES (6, 2, 'Gestao Empresarial', 2, '14:50', 'Segunda-feira') 
+
+select * from Disciplina
+
+select * from Matricula
 --function criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
 --procedure valida se o cpf ja existe na base de daods foi criada
 --procedure sp_iuAluno foi atualizada com a chamada da proceudre de verifica��o de duplicidade do cpf 

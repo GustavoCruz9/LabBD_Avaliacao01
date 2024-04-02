@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Aluno;
 import model.Curso;
-import model.Telefone;
 import persistence.AlunoDao;
 import persistence.GenericDao;
 

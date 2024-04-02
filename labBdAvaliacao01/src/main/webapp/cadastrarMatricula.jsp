@@ -46,16 +46,16 @@
                             <td>Matemática Discreta</td>
                             <td>4</td>
                             <td>08:00</td>
-                            <td>Pendente</td>
-                            <td class="status"><input type="checkbox"></td>
+                            <td>Reprovado</td>
+                            <td class="status"><input type="submit"></td>
                         </tr>
                         <tr>
                             <td>002</td>
-                            <td>ALgoritmo e logica de programação</td>
+                            <td>Algoritmo e logica de programação</td>
                             <td>3</td>
                             <td>09:30</td>
                             <td>Reprovado</td>
-                            <td class="status"><input type="checkbox"></td>
+                            <td class="status"><input type="submit"></td>
                         </tr>
                         <tr>
                             <td>003</td>
@@ -63,15 +63,15 @@
                             <td>2</td>
                             <td>10:45</td>
                             <td>Não Matriculado</td>
-                            <td class="status"><input type="checkbox"></td>
+                            <td class="status"><input type="submit"></td>
                         </tr>
                         <tr>
                             <td>004</td>
                             <td>Ciências</td>
                             <td>3</td>
                             <td>13:00</td>
-                            <td>Pendente</td>
-                            <td class="status"><input type="checkbox"></td>
+                            <td>Não Matriculado</td>
+                            <td class="status"><input type="submit"></td>
                         </tr>
                         <tr>
                             <td>005</td>
@@ -79,7 +79,7 @@
                             <td>2</td>
                             <td>14:30</td>
                             <td>Não Matriculado</td>
-                            <td class="status"><input type="checkbox"></td>
+                            <td class="status"><input type="submit"></td>
                         </tr>
                     </tbody>
                 </table>

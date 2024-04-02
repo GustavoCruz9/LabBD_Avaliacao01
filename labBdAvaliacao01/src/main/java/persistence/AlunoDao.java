@@ -72,11 +72,11 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 
 		Connection c = gDao.getConnection();
 		String sql = """
-				SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo,
-				a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso,
+				SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, 
+				a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso, 
 				a.semestreIngresso, a.anoIngresso, a.anoLimite, a.semestreLimite,
-				(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2,
-				(SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1
+				(SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1,
+				(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2
 				FROM Aluno a
 				""";
 
@@ -88,12 +88,9 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 
 			Aluno a = new Aluno();
 			Curso cu = new Curso();
+			Telefone tel = new Telefone();
 
-			Telefone[] telefones = new Telefone[2];
-
-			for (int x = 0; x < 2; x++) {
-				telefones[x] = new Telefone();
-			}
+			List<Telefone> telefones =  new ArrayList<>();
 
 			a.setCpf(rs.getString("cpf"));
 			cu.setCodigo(rs.getInt("codCurso"));
@@ -119,11 +116,26 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 			a.setSemestreIngresso(rs.getInt("semestreIngresso"));
 			a.setSemestreLimite(rs.getInt("semestreLimite"));
 			a.setAnoLimite(rs.getInt("anoLimite"));
+			
+			if(rs.getString("telefone1") != null) {
+				tel.setNumero(rs.getString("telefone1"));
+			}else {
+				tel.setNumero("Pendente");
+				
+			}
+			
+			telefones.add(tel);
+			tel = new Telefone();
+			
+			if(rs.getString("telefone2") != null) {
+				tel.setNumero(rs.getString("telefone2"));
+			}else {
+				tel.setNumero("Não Cadastrado");
+			}
+			
+			telefones.add(tel);
 
-//			telefones[0].setNumero(rs.getString("telefone2"));
-//			telefones[1].setNumero(rs.getString("telefone1"));
-//
-//			a.setTelefones(telefones);
+			a.setTelefones(telefones);
 
 			alunos.add(a);
 		}

@@ -19,8 +19,9 @@
 		<form action="aluno" method="post">
 			<input type="submit" id="botao" name="botao" value="Listar">
 		</form>
-
-		<c:if test="${not empty alunos}">
+		
+		<div class="divTabelaAlunos">
+			<c:if test="${not empty alunos}">
 			<table class="tabelaAluno">
 				<thead>
 					<tr>
@@ -59,13 +60,16 @@
 							<td><c:out value="${a.posicaoVestibular}"></c:out>
 							<td><c:out value="${a.anoIngresso}${-a.semestreIngresso}"></c:out>
 							<td><c:out value="${a.anoLimite}${-a.semestreLimite}"></c:out>
-							<td><c:out value="${a.telefones[1].numero}"></c:out>
 							<td><c:out value="${a.telefones[0].numero}"></c:out>
+							<td><c:out value="${a.telefones[1].numero}"></c:out>
 						</tr>
 					</c:forEach>
 				</tbody>
 			</table>
 		</c:if>
+		</div>
+
+		
 		<br />
 
 		<div align="center">
