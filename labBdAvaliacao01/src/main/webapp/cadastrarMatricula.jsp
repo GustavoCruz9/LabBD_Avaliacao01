@@ -1,172 +1,212 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Sistema AGIS - Secretaria Acadêmica</title>
-    <link rel="stylesheet" href="./css/styleSecretariaMatricula.css">
+<link rel="stylesheet" href="./css/styleSecretariaMatricula.css">
 </head>
 
 <body>
 
-    <script src="./js/header.js"></script>
-    
-    <main>
-        <h1>Cadastro de Matrícula</h1>
+	<script src="./js/header.js"></script>
 
-        <form action="tabelaDiasSemana" method="post" class="formMatricula">
-            <div class="cpfMatricula">
-                <div class="pesquisaCpf">
-                    <input type="text" name="pesquisaRa" id="pesquisaRa" placeholder="RA" class="inputCPF">
-                    <input type="submit" value="🔎" class="btnCPF">
-                </div>
-            </div>
+	<main>
+		<h1>Cadastro de Matrícula</h1>
 
-            <div class="diasSemana">
-                <table class="segunda">
-                    <thead>
-                        <tr>
-                            <th colspan="6" class="tableTitle">
-                                Segunda-feira
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Código</th>
-                            <th>Disciplina</th>
-                            <th>Horas Semanais</th>
-                            <th>Hora de Início</th>
-                            <th>Status</th>
-                            <th>Selecionar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>001</td>
-                            <td>Matemática Discreta</td>
-                            <td>4</td>
-                            <td>08:00</td>
-                            <td>Reprovado</td>
-                            <td class="status"><input type="submit"></td>
-                        </tr>
-                        <tr>
-                            <td>002</td>
-                            <td>Algoritmo e logica de programação</td>
-                            <td>3</td>
-                            <td>09:30</td>
-                            <td>Reprovado</td>
-                            <td class="status"><input type="submit"></td>
-                        </tr>
-                        <tr>
-                            <td>003</td>
-                            <td>História</td>
-                            <td>2</td>
-                            <td>10:45</td>
-                            <td>Não Matriculado</td>
-                            <td class="status"><input type="submit"></td>
-                        </tr>
-                        <tr>
-                            <td>004</td>
-                            <td>Ciências</td>
-                            <td>3</td>
-                            <td>13:00</td>
-                            <td>Não Matriculado</td>
-                            <td class="status"><input type="submit"></td>
-                        </tr>
-                        <tr>
-                            <td>005</td>
-                            <td>Inglês</td>
-                            <td>2</td>
-                            <td>14:30</td>
-                            <td>Não Matriculado</td>
-                            <td class="status"><input type="submit"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="terca">
-                    <thead>
-                        <tr>
-                            <th colspan="6" class="tableTitle">
-                                Terca-feira
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Código</th>
-                            <th>Disciplina</th>
-                            <th>Horas Semanais</th>
-                            <th>Hora de Início</th>
-                            <th>Status</th>
-                            <th>Selecionar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <table class="quarta">
-                    <thead>
-                        <tr>
-                            <th colspan="6" class="tableTitle">
-                                Quarta-feira
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Código</th>
-                            <th>Disciplina</th>
-                            <th>Horas Semanais</th>
-                            <th>Hora de Início</th>
-                            <th>Status</th>
-                            <th>Selecionar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <table class="quinta">
-                    <thead>
-                        <tr>
-                            <th colspan="6" class="tableTitle">
-                                Quinta-feira
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Código</th>
-                            <th>Disciplina</th>
-                            <th>Horas Semanais</th>
-                            <th>Hora de Início</th>
-                            <th>Status</th>
-                            <th>Selecionar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <table class="sexta">
-                    <thead>
-                        <tr>
-                            <th colspan="6" class="tableTitle">
-                                Sexta-feira
-                            </th>
-                        </tr>
-                        <tr>
-                            <th>Código</th>
-                            <th>Disciplina</th>
-                            <th>Horas Semanais</th>
-                            <th>Hora de Início</th>
-                            <th>Status</th>
-                            <th>Selecionar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
+		<form action="matricula" method="post" class="formMatricula">
+			<div class="cpfMatricula">
+				<div class="pesquisaCpf">
+					<input type="text" name="pesquisaRa" id="pesquisaRa"
+						name="pesquisaRa" placeholder="RA" class="inputCPF"> <input
+						type="submit" value="🔎" class="btnCPF" id="botao" name="botao">
+				</div>
+			</div>
+			
+			<br>
+			<br>
 
-            <input type="submit" value="Matricular" class="btnMatricular">
-        </form>
+			<div align="center">
+				<c:if test="${not empty erro }">
+					<h2>
+						<b><c:out value="${erro }" /></b>
+					</h2>
+				</c:if>
+			</div>
 
-    </main>
+			<br />
+			<div align="center">
+				<c:if test="${not empty saida }">
+					<h3>
+						<b><c:out value="${saida }" /></b>
+					</h3>
+				</c:if>
+			</div>
+			
+			<br>
+			<br>
 
-    <script src="./js/navegacao.js"></script>
+			<div class="diasSemana">
+				<table class="segunda">
+					<thead>
+						<tr>
+							<th colspan="6" class="tableTitle">Segunda-feira</th>
+						</tr>
+						<tr>
+							<th>Código</th>
+							<th>Disciplina</th>
+							<th>Horas Semanais</th>
+							<th>Hora de Início</th>
+							<th>Status</th>
+							<th>Selecionar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="d" items="${disciplinas }">
+							<c:if test="${d.disciplina.diaSemana eq 'segunda-feira' }">
+								<tr>
+									<td><c:out value="${d.disciplina.codigoDisciplina}"></c:out>
+									<td><c:out value="${d.disciplina.disciplina}"></c:out>
+									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
+									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
+									<td><c:out value="${d.status}"></c:out>
+									<td class="status"><input type="submit" id="matricular"
+										name="matricular" value="matricular"></td>
+								</tr>
+							</c:if>
+						</c:forEach>
+					</tbody>
+				</table>
+				<table class="terca">
+					<thead>
+						<tr>
+							<th colspan="6" class="tableTitle">Terca-feira</th>
+						</tr>
+						<tr>
+							<th>Código</th>
+							<th>Disciplina</th>
+							<th>Horas Semanais</th>
+							<th>Hora de Início</th>
+							<th>Status</th>
+							<th>Selecionar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="d" items="${disciplinas }">
+							<c:if test="${d.disciplina.diaSemana eq 'terça-feira' }">
+								<tr>
+									<td><c:out value="${d.disciplina.codigoDisciplina}"></c:out>
+									<td><c:out value="${d.disciplina.disciplina}"></c:out>
+									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
+									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
+									<td><c:out value="${d.status}"></c:out>
+									<td class="status"><input type="submit" id="matricular"
+										name="matricular" value="matricular"></td>
+								</tr>
+							</c:if>
+						</c:forEach>
+					</tbody>
+				</table>
+				<table class="quarta">
+					<thead>
+						<tr>
+							<th colspan="6" class="tableTitle">Quarta-feira</th>
+						</tr>
+						<tr>
+							<th>Código</th>
+							<th>Disciplina</th>
+							<th>Horas Semanais</th>
+							<th>Hora de Início</th>
+							<th>Status</th>
+							<th>Selecionar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="d" items="${disciplinas }">
+							<c:if test="${d.disciplina.diaSemana eq 'quarta-feira' }">
+								<tr>
+									<td><c:out value="${d.disciplina.codigoDisciplina}"></c:out>
+									<td><c:out value="${d.disciplina.disciplina}"></c:out>
+									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
+									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
+									<td><c:out value="${d.status}"></c:out>
+									<td class="status"><input type="submit" id="matricular"
+										name="matricular" value="matricular"></td>
+								</tr>
+							</c:if>
+						</c:forEach>
+					</tbody>
+				</table>
+				<table class="quinta">
+					<thead>
+						<tr>
+							<th colspan="6" class="tableTitle">Quinta-feira</th>
+						</tr>
+						<tr>
+							<th>Código</th>
+							<th>Disciplina</th>
+							<th>Horas Semanais</th>
+							<th>Hora de Início</th>
+							<th>Status</th>
+							<th>Selecionar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="d" items="${disciplinas }">
+							<c:if test="${d.disciplina.diaSemana eq 'quinta-feira' }">
+								<tr>
+									<td><c:out value="${d.disciplina.codigoDisciplina}"></c:out>
+									<td><c:out value="${d.disciplina.disciplina}"></c:out>
+									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
+									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
+									<td><c:out value="${d.status}"></c:out>
+									<td class="status"><input type="submit" id="matricular"
+										name="matricular" value="matricular"></td>
+								</tr>
+							</c:if>
+						</c:forEach>
+					</tbody>
+				</table>
+				<table class="sexta">
+					<thead>
+						<tr>
+							<th colspan="6" class="tableTitle">Sexta-feira</th>
+						</tr>
+						<tr>
+							<th>Código</th>
+							<th>Disciplina</th>
+							<th>Horas Semanais</th>
+							<th>Hora de Início</th>
+							<th>Status</th>
+							<th>Selecionar</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach var="d" items="${disciplinas }">
+							<c:if test="${d.disciplina.diaSemana eq 'sexta-feira' }">
+								<tr>
+									<td><c:out value="${d.disciplina.codigoDisciplina}"></c:out>
+									<td><c:out value="${d.disciplina.disciplina}"></c:out>
+									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
+									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
+									<td><c:out value="${d.status}"></c:out>
+									<td class="status"><input type="submit" id="matricular"
+										name="matricular" value="matricular"></td>
+								</tr>
+							</c:if>
+						</c:forEach>
+					</tbody>
+				</table>
+			</div>
+
+			<input type="submit" value="Matricular" class="btnMatricular">
+		</form>
+
+	</main>
+
+	<script src="./js/navegacao.js"></script>
 
 
 </body>

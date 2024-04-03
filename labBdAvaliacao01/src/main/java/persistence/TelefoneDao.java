@@ -72,10 +72,5 @@ public class TelefoneDao implements ITelefone, IListar<Aluno>{
 				
 		return saida;
 	}
-
-	
-	
-	
-	
 	
 }

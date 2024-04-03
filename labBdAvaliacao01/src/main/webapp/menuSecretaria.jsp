@@ -24,18 +24,18 @@
 			<table>
 				<tr>
 					<td colspan="3"><input type="number" id="cpf" name="cpf"
-						placeholder="CPF" value='<c:out value="${aluno.cpf}"></c:out>'></td>
+						placeholder="CPF *" value='<c:out value="${aluno.cpf}"></c:out>'></td>
 					<td><input type="submit" id="botao" name="botao"
 						value="Buscar"></td>
 				</tr>
 				<tr>
 					<td colspan="4"><input type="text" id="nome" name="nome"
-						placeholder="Nome" value='<c:out value="${aluno.nome}"></c:out>'></td>
+						placeholder="Nome *" value='<c:out value="${aluno.nome}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="1">
 						<div class="datas">
-							<label for="dataNascimento">Data de Nascimento</label> <input
+							<label for="dataNascimento">Data de Nascimento *</label> <input
 								type="date" id="dataNascimento" name="dataNascimento" 
 								value='<c:out value="${aluno.dataNascimento}"></c:out>'>
 						</div>
@@ -46,30 +46,30 @@
 				</tr>
 				<tr>
 					<td colspan="2"><input type="text" id="email" name="email"
-						placeholder="E-mail" value='<c:out value="${aluno.email}"></c:out>'></td>
+						placeholder="E-mail *" value='<c:out value="${aluno.email}"></c:out>'></td>
 					<td colspan="2"><input type="text" id="codCurso"
-						name="codCurso" placeholder="Código do Curso" 
+						name="codCurso" placeholder="Código do Curso *" 
 						value='<c:out value="${aluno.curso.codigo}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="1">
 						<div class="datas">
-							<label for="dataConclusao2Grau">Data de Conclusão</label> <input
+							<label for="dataConclusao2Grau">Data de Conclusão *</label> <input
 								type="date" id="dataConclusao2Grau" name="dataConclusao2Grau" 
 								value='<c:out value="${aluno.dataConclusao2Grau}"></c:out>'>
 						</div>
 					</td>
 					<td colspan="3"><input type="text"
 						id="instituicaoConclusao2Grau" name="instituicaoConclusao2Grau"
-						placeholder="Instituição de Conclusão 2º Grau" 
+						placeholder="Instituição de Conclusão 2º Grau *" 
 						value='<c:out value="${aluno.instituicao2Grau}"></c:out>'></td>
 				</tr>
 				<tr>
 					<td colspan="2"><input type="number" id="pontuacaoVestibular"
-						name="pontuacaoVestibular" placeholder="Pontuação Vestibular" 
+						name="pontuacaoVestibular" placeholder="Pontuação Vestibular *" 
 						value='<c:out value="${aluno.pontuacaoVestibular}"></c:out>'></td>
 					<td colspan="2"><input type="number" id="posicaoVestibular"
-						name="posicaoVestibular" placeholder="Posição Vestibular"
+						name="posicaoVestibular" placeholder="Posição Vestibular *"
 						value='<c:out value="${aluno.posicaoVestibular}"></c:out>'></td>
 				</tr>
 				<tr>

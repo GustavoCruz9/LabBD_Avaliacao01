@@ -6,7 +6,7 @@ go
 use labBdAvaliacao01
 go
 create table Curso (
-codCurso		int				not null,
+codCurso		int				not null check(codCurso >= 0 and codCurso <= 100),
 nome			varchar(100)	not null,
 cargaHoraria	int				not null,
 sigla			varchar(3)		not null,
@@ -22,7 +22,7 @@ nome				varchar(150)	not null,
 nomeSocial			varchar(150)	null,
 dataNascimento		date			not null,
 email				varchar(100)	not null,
-dataConclusao2Grau	date			not null,
+dataConclusao2Grau	date			not null ,
 emailCorporativo	varchar(100)	not null,
 instituicao2Grau	varchar(100)	not null,
 pontuacaoVestibular	int				not null,
@@ -34,6 +34,7 @@ anoLimite			int				not null,
 turno				varchar(10)		not null
 Primary Key(cpf)
 Foreign Key(codCurso) references Curso(codCurso)
+constraint verificaDataConclusao check (dataConclusao2Grau > dataNascimento)
 )
 go
 create table Telefone (
@@ -44,7 +45,7 @@ Foreign key(cpf) references Aluno(cpf)
 )
 go
 create table Disciplina (
-codDisciplina	int				not null,
+codDisciplina	int				not null identity(1001, 1),
 codCurso		int				not null,
 nome			varchar(100)	not null,
 horasSemanais	int				not null,
@@ -311,7 +312,7 @@ as
 								end
 								else
 								begin
-											raiserror('CPF j� cadastrado', 16, 1)
+											raiserror('CPF já cadastrado', 16, 1)
 								end
 						end
 						else
@@ -338,7 +339,7 @@ as
 		end
 		else
 		begin
-			raiserror('CPF Inv�lido, verifique e tente novamente.', 16, 1)
+			raiserror('CPF Inválido, verifique e tente novamente.', 16, 1)
 		end
 
 --Procedure sp_iudTelefone	
@@ -348,48 +349,56 @@ create procedure sp_iudTelefone(@op char(1), @cpf char(11), @telefoneAntigo char
 as
 		declare @validarExistenciaCpf bit
 		exec sp_validaCpfDuplicado @cpf, @validarExistenciaCpf output
-		if(@validarExistenciaCpf = 0)
+
+		if(@validarExistenciaCpf = 0) 
 		begin
-				if(upper(@op) = 'U')
+				if(len(@telefoneNovo) = 11)
 				begin
-						if(LEN(@telefoneAntigo) = 11 and LEN(@telefoneNovo) = 11)
+						if(upper(@op) = 'U')
 						begin
-
-							update Telefone set numero = @telefoneNovo where cpf = @cpf and numero = @telefoneAntigo
-
-							set @saida = 'Telefone atualizado com sucesso'
-
-						end
-						else
-						begin
-							raiserror('tamanho de telefone incorreto', 16, 1)
-						end
-				end
-				else
-						if(upper(@op) = 'D')
-						begin
-								begin try
-
-									delete Telefone where cpf = @cpf and numero = @telefoneNovo
-
-									set @saida = 'Telefone excluido com sucesso'
-
-								end try
-								begin catch
-										raiserror('Telefone inexistente ou invalidado', 16, 1)
-								end catch
-						end
-						else
-								if(upper(@op) = 'I')
+								if(len(@telefoneAntigo) = 11)
 								begin
-										insert into Telefone (cpf, numero) values (@cpf, @telefoneNovo)
 
-										set @saida = 'Telefone cadastrado com sucesso'
+									update Telefone set numero = @telefoneNovo where cpf = @cpf and numero = @telefoneAntigo
+
+									set @saida = 'Telefone atualizado com sucesso'
+
 								end
 								else
 								begin
-										raiserror('Operação inválida', 16, 1)
+									raiserror('Tamanho de telefone incorreto', 16, 1)
 								end
+						end
+						else
+								if(upper(@op) = 'D')
+								begin
+										begin try
+
+											delete Telefone where cpf = @cpf and numero = @telefoneNovo
+
+											set @saida = 'Telefone excluido com sucesso'
+
+										end try
+										begin catch
+												raiserror('Telefone inexistente ou invalidado', 16, 1)
+										end catch
+								end
+								else
+										if(upper(@op) = 'I')
+										begin
+												insert into Telefone (cpf, numero) values (@cpf, @telefoneNovo)
+
+												set @saida = 'Telefone cadastrado com sucesso'
+										end
+										else
+										begin
+												raiserror('Operação inválida', 16, 1)
+										end
+				end 
+				else
+				begin
+					raiserror('Tamanho de telefone incorreto', 16, 1)
+				end
 		end
 		else
 		begin
@@ -411,7 +420,7 @@ begin
 	
 		declare @codCurso int
 
-		set @codCurso = (select codCurso from aluno where ra = @ra)
+		set @codCurso = (select codCurso from Aluno where ra = @ra)
 
 		insert into @tabela (diaSemana, codDisciplina, disciplina, horasSemanais, horaInicio, statusMatricula)
 					select d.diaSemana, d.codDisciplina, d.nome, d.horasSemanais, convert(varchar(5), d.horaInicio, 108) as horaInicio, 'não matriculado' as statusMatricula
@@ -436,6 +445,11 @@ end
 
 select diaSemana, codDisciplina, disciplina, horasSemanais, convert(varchar(5), horaInicio, 108) as horaInicio, statusMatricula
  from fn_realizaMatricula('202416328')
+ order by diaSemana, horaInicio
+
+ select diaSemana, codDisciplina, disciplina, horasSemanais,
+				horaInicio, statusMatricula
+				from fn_realizaMatricula( '202416328' )
 	  
 -- testes
 
@@ -534,6 +548,10 @@ VALUES
 (3, 1, 'Banco de Dados', 3, '10:00:00', 'Terça-feira'),
 (4, 1, 'Engenharia de Software', 4, '10:00:00', 'Quinta-feira');
 
+INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
+VALUES 
+(7, 1, 'Sistemas Operacionais II', 4, '08:00:00', 'Sexta-feira')
+
 INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
 (20241, '41707740860', 1, 'Pendente'),
 (20241, '41707740860', 4, 'Reprovado')
@@ -544,12 +562,31 @@ INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES
 INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
 (20241, '41707740860', 3, 'Reprovado')
 
+INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
+(20241, '41707740860', 8, 'Reprovado')
+
 INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
 VALUES (6, 2, 'Gestao Empresarial', 2, '14:50', 'Segunda-feira') 
 
+INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
+VALUES (8, 1, 'Laboratório de Hardware', 4, '14:50', 'Segunda-feira') 
+
+INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
+(20241, '41707740860', 8, 'Reprovado')
+
+select m.diaSemana, m.codDisciplina, m.disciplina, m.horasSemanais,
+					m.horaInicio, m.statusMatricula 
+					from Matricula m, Aluno a
+					where a.ra = '202416328' and m.cpf = a.cpf
+
 select * from Disciplina
 
+select d.codDisciplina, d.nome, d.horasSemanais, d.horaInicio, m.statusMatricula
+from Disciplina d, Matricula m, Aluno a
+where a.ra = '202416328' and d.codDisciplina = m.codDisciplina and m.cpf = a.cpf
+
 select * from Matricula
+delete Matricula
 --function criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
 --procedure valida se o cpf ja existe na base de daods foi criada
 --procedure sp_iuAluno foi atualizada com a chamada da proceudre de verifica��o de duplicidade do cpf 
