@@ -1,5 +1,5 @@
 ﻿-- use master
--- drop database labBdAvaliacao01
+--	 drop database labBdAvaliacao01
 
 create database labBdAvaliacao01
 go
@@ -44,12 +44,20 @@ Primary key(numero, cpf)
 Foreign key(cpf) references Aluno(cpf)
 )
 go
+
+/*
+drop table Disciplina
+drop table matricula
+drop table conteudo
+*/
+
 create table Disciplina (
-codDisciplina	int				not null identity(1001, 1),
+codDisciplina	int				not null /*identity(1001, 1)*/,
 codCurso		int				not null,
 nome			varchar(100)	not null,
-horasSemanais	int				not null,
-horaInicio		time(7)			not null,
+horasSemanais	time			not null,
+horaInicio		time			not null,
+horaFinal as dbo.calcularHoraFinal(HoraInicio, HorasSemanais),
 diaSemana		varchar(15)		not null
 Primary key(codDisciplina)
 Foreign key(codCurso) references Curso(codCurso)
@@ -59,7 +67,7 @@ create table Matricula (
 anoSemestre		int				not null,
 cpf				char(11)		not null,
 codDisciplina	int				not null,
-statusMatricula	varchar(10)		not null,
+statusMatricula	varchar(10)		not null default ('pendente'),
 nota			decimal(2,2)	null
 Primary key(anoSemestre, cpf, codDisciplina)
 Foreign key(cpf) references Aluno(cpf),
@@ -405,15 +413,15 @@ as
 				raiserror('O CPF não existe na base de dados do sistema', 16, 1)
 		end
 
---FUNCTION FN_REALIZARMATRICULA
---drop function fn_realizaMatricula
-create function fn_realizaMatricula(@ra char(9))
+--FUNCTION FN_POPULARMATRICULA
+--drop function fn_popularMatricula
+create function fn_popularMatricula(@ra char(9))
 returns @tabela table (
 	diaSemana	varchar(15),
 	codDisciplina	int,
 	disciplina	varchar(100),
-	horasSemanais	int,
-	horaInicio		time(4),
+	horasSemanais	time,
+	horaInicio		time,
 	statusMatricula	varchar(20)
 )
 begin
@@ -434,14 +442,180 @@ begin
 							  and m1.codDisciplina = m.codDisciplina
 							  and m1.anoSemestre > m.anoSemestre
 							  and m1.statusMatricula = 'Aprovado'
-					where d.codCurso = 1 and
+					where d.codCurso = @codCurso and
 						  m.statusMatricula = 'Reprovado'
 						  and m1.anoSemestre is null and 
 						  d.codDisciplina = m.codDisciplina
 
 		return
+end	
 
-end		
+-- Drop function calcularHoraFinal
+-- FUNCTION CalcularHoraFinal 
+create function calcularHoraFinal (@horaInicio time, @horasSemanais time)
+returns time
+as
+begin
+    declare @horaFinal time;
+    declare @horas int;
+    declare @minutos int;
+
+    set @horas = datepart(hour, @horasSemanais);
+
+    set @minutos = datepart(minute, @horasSemanais);
+
+    set @horaFinal = dateadd(hour, @horas, @horaInicio);
+    set @horaFinal = dateadd(minute, @minutos, @horaFinal);
+
+    return @horaFinal
+end
+
+
+-- PROCEDURE sp_cadastrarMatricula
+-- drop procedure sp_cadastrarMatricula
+
+select * from Matricula
+select * from Disciplina
+
+create procedure sp_cadastrarMatricula(@ra char(9), @codDisciplinaRequerida int, @saida varchar(150) output)
+as
+		declare @codCurso int,
+				@diaSemana varchar(15),
+				@disciplinaRequerida time,
+				@disciplinaMatriculada time,
+				@cpf char(11)
+
+		set @cpf = (select cpf from Aluno where ra = @ra)
+
+		set @codCurso = (select codCurso from Aluno where ra = @ra)
+
+		set @diaSemana = (select diaSemana from Disciplina where codDisciplina = @codDisciplinaRequerida)
+
+		declare @horaInicioDisciplinaRequerida time,
+				@horaInicioDisciplinaMatriculada time,
+				@horaFinalDisciplinaMatriculada time,
+				@horaFinalDisciplinaRequerida time,
+				@qtdMatricula int
+
+		set @horaInicioDisciplinaRequerida =  (select horaInicio 
+									from Disciplina 
+									where diaSemana =  @diaSemana
+									and codCurso = @codCurso 
+									and codDisciplina = @codDisciplinaRequerida)
+
+		set @horaFinalDisciplinaRequerida = (select horaFinal 
+									from Disciplina 
+									where diaSemana = @diaSemana 
+									and codCurso = @codCurso 
+									and codDisciplina = @codDisciplinaRequerida)
+
+		set @qtdMatricula = (select count(*) from matricula m, Disciplina d 
+							 where lower(m.statusMatricula) = lower('Pendente') 
+							 and m.codDisciplina = d.codDisciplina and
+							 d.codCurso = @codCurso and d.diaSemana = @diaSemana)
+
+		while(@qtdMatricula > 0)
+		begin
+				
+				declare @top int,
+						@codDisciplinaMatriculada int
+
+				set @top = @qtdMatricula
+
+				set @codDisciplinaMatriculada = (select top (@top) d.codDisciplina from matricula m, Disciplina d 
+											  where lower(m.statusMatricula) = lower('Pendente') 
+											  and m.codDisciplina = d.codDisciplina and
+											  d.codCurso = @codCurso and d.diaSemana = @diaSemana)
+
+
+				set @horaInicioDisciplinaMatriculada = (select d.horaInicio 
+											  from matricula m, Disciplina d 
+											  where lower(m.statusMatricula) = lower('Pendente') 
+											  and m.codDisciplina = d.codDisciplina and
+											  d.codCurso = @codCurso and d.diaSemana = @diaSemana
+											  and d.codDisciplina = @codDisciplinaMatriculada)
+
+				set @horaFinalDisciplinaMatriculada = (select d.horaFinal 
+											  from matricula m, Disciplina d 
+											  where lower(m.statusMatricula) = lower('Pendente') 
+											  and m.codDisciplina = d.codDisciplina and
+											  d.codCurso = @codCurso and d.diaSemana = @diaSemana
+											  and d.codDisciplina = @codDisciplinaMatriculada)
+
+		
+				if(@horaInicioDisciplinaRequerida != @horaInicioDisciplinaMatriculada) 
+				begin
+							if((@horaInicioDisciplinaRequerida not between @horaInicioDisciplinaMatriculada and @horaFinalDisciplinaMatriculada)
+								and 
+								(@horaFinalDisciplinaRequerida not between @horaInicioDisciplinaMatriculada and @horaFinalDisciplinaMatriculada))
+							begin
+									print 'entrou'
+									declare @anoSemestre varchar(5)
+
+									set @anoSemestre = dbo.fn_obterAnoSemestre()
+
+									insert into Matricula (anoSemestre, cpf, codDisciplina) values
+									(@anoSemestre, @cpf, @codDisciplinaRequerida)
+
+									set @saida = 'Matricula realizada com sucesso'
+
+							end
+							else
+							begin
+								raiserror ('Já existe um materia cadastrada nesse intervalo de horario 2', 16, 1)
+							end		
+				end
+				else
+				begin
+						raiserror('Já existe um materia cadastrada nesse intervalo de horario', 16, 1)
+				end
+
+				set @qtdMatricula = @qtdMatricula - 1
+		end
+
+
+
+-- FUNCTION PARA OBTER ANOSEMESTRE
+-- drop function fn_obterAnoSemestre
+create function fn_obterAnoSemestre ()
+returns varchar(5)
+begin
+		declare @anoSemestre varchar(5),
+				@ano int,
+				@mes int;
+
+		
+		set @ano = year(getdate())
+		set @mes = month(getdate())
+
+
+		if @mes >= 1 and @mes <= 6
+			set @anoSemestre = cast(@ano as varchar(4)) + '1'
+		else
+			set @anoSemestre = cast(@ano as varchar(4)) + '2'
+
+		return @anoSemestre
+				
+end
+
+
+	  
+-- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES ---- TESTES ---- TESTES -- -- TESTES --
+
+declare @saida varchar(150)
+exec sp_cadastrarMatricula '202416328', 1001, @saida output
+print @saida
+
+declare @resultado varchar(5);
+set @resultado = dbo.fn_obterAnoSemestre();
+print @resultado;
+
+declare @top int
+set @top = 1
+select top (@top) d.codDisciplina from matricula m, Disciplina d 
+											  where lower(m.statusMatricula) = lower('Pendente') 
+											  and m.codDisciplina = d.codDisciplina and
+											  d.codCurso = 1 and d.diaSemana = 'Segunda-feira'
 
 select diaSemana, codDisciplina, disciplina, horasSemanais, convert(varchar(5), horaInicio, 108) as horaInicio, statusMatricula
  from fn_realizaMatricula('202416328')
@@ -450,8 +624,6 @@ select diaSemana, codDisciplina, disciplina, horasSemanais, convert(varchar(5), 
  select diaSemana, codDisciplina, disciplina, horasSemanais,
 				horaInicio, statusMatricula
 				from fn_realizaMatricula( '202416328' )
-	  
--- testes
 
 
 -- Inser��es na tabela Curso
@@ -504,6 +676,7 @@ SELECT dbo.fn_criaRa(2024, 1) AS RA
 select dbo.fn_criaEmailCorporativo('Gustavo da Cruz santos', '202411234') as emailCorp
 
 
+
 declare @saida bit
 exec sp_validaCpfDuplicado '41707740865', @saida output
 print @saida
@@ -543,50 +716,37 @@ select cpf, codCurso, ra, nome, nomeSocial, dataNascimento, email, emailCorporat
 
 INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
 VALUES 
-(1, 1, 'Programação I', 4, '08:00:00', 'Segunda-feira'),
-(2, 1, 'Programação II', 4, '08:00:00', 'Quarta-feira'),
-(3, 1, 'Banco de Dados', 3, '10:00:00', 'Terça-feira'),
-(4, 1, 'Engenharia de Software', 4, '10:00:00', 'Quinta-feira');
+( 1001, 1, 'Programação I', '3:30', '13:00', 'Segunda-feira'),
+(1002, 1, 'Programação II', '1:40', '13:00', 'Segunda-feira'),
+(1003, 1, 'Banco de Dados', '3:30', '14:50', 'Segunda-feira'),
+(1004, 1, 'Engenharia de Software', '1:40', '14:50:00', 'Segunda-feira'),
+(1005, 1, 'Laboratório de Hardware', '1:40', '16:40', 'Segunda-feira'),
+(1006, 1, 'Arquitetura de computadores', '3:30', '14:50', 'Sexta-feira'),
+(1007, 2, 'Gestao Empresarial', '1:40', '14:50', 'Segunda-feira') 
 
-INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
-VALUES 
-(7, 1, 'Sistemas Operacionais II', 4, '08:00:00', 'Sexta-feira')
+select * from Disciplina
 
-INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
-(20241, '41707740860', 1, 'Pendente'),
-(20241, '41707740860', 4, 'Reprovado')
-
-INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
-(20242, '41707740860', 4, 'Aprovado')
-
-INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
-(20241, '41707740860', 3, 'Reprovado')
-
-INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
-(20241, '41707740860', 8, 'Reprovado')
-
-INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
-VALUES (6, 2, 'Gestao Empresarial', 2, '14:50', 'Segunda-feira') 
-
-INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
-VALUES (8, 1, 'Laboratório de Hardware', 4, '14:50', 'Segunda-feira') 
-
-INSERT INTO Matricula (anoSemestre, cpf, codDisciplina, statusMatricula) VALUES 
-(20241, '41707740860', 8, 'Reprovado')
+INSERT INTO Matricula (anoSemestre, cpf, codDisciplina) VALUES 
+(20241, '41707740860', 1001),
+(20241, '41707740860', 1002 ),
+(20242, '41707740860', 1003 ),
+(20241, '41707740860', 1004 ),
+(20241, '41707740860', 1005),
+(20241, '41707740860', 1006),
+(20241, '41707740860', 1007)
 
 select m.diaSemana, m.codDisciplina, m.disciplina, m.horasSemanais,
 					m.horaInicio, m.statusMatricula 
 					from Matricula m, Aluno a
 					where a.ra = '202416328' and m.cpf = a.cpf
 
-select * from Disciplina
+
 
 select d.codDisciplina, d.nome, d.horasSemanais, d.horaInicio, m.statusMatricula
 from Disciplina d, Matricula m, Aluno a
 where a.ra = '202416328' and d.codDisciplina = m.codDisciplina and m.cpf = a.cpf
 
+select * from Disciplina
 select * from Matricula
 delete Matricula
---function criaRa foi atualizada pois agoras verifica se o ra gerado ja esxiste na base de dados
---procedure valida se o cpf ja existe na base de daods foi criada
---procedure sp_iuAluno foi atualizada com a chamada da proceudre de verifica��o de duplicidade do cpf 
+
