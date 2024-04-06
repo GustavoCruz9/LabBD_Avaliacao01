@@ -40,7 +40,11 @@ public class MatriculaServlet extends HttpServlet {
 
 		try {
 
-			disciplinas = listarDisciplinas(a);
+			if(verificaRa(a) == 1) {
+				disciplinas = listarDisciplinas(a);
+			} else {
+				erro = "RA inválido";
+			}
 
 		} catch (SQLException | ClassNotFoundException e) {
 			erro = e.getMessage();
@@ -73,7 +77,7 @@ public class MatriculaServlet extends HttpServlet {
 		Disciplina d = new Disciplina();
 
 		a.setRa(pesquisaRa);
-		
+
 		if (!cmd.contains("🔍")) {
 			d.setCodigoDisciplina(Integer.parseInt(cmd));
 
@@ -83,7 +87,9 @@ public class MatriculaServlet extends HttpServlet {
 
 		try {
 			if (cmd.contains("🔍")) {
+
 				matriculas = listarMatriculas(a);
+
 			} else {
 				saida = cadastrarMatricula(m);
 				disciplinas = listarDisciplinas(a);
@@ -91,13 +97,13 @@ public class MatriculaServlet extends HttpServlet {
 
 		} catch (SQLException | ClassNotFoundException e) {
 			erro = e.getMessage();
-			
+
 			try {
 				disciplinas = listarDisciplinas(a);
 			} catch (SQLException | ClassNotFoundException e1) {
 				erro = e1.getMessage();
-			} 
-			
+			}
+
 		} finally {
 			request.setAttribute("saida", saida);
 			request.setAttribute("erro", erro);
@@ -113,6 +119,12 @@ public class MatriculaServlet extends HttpServlet {
 			}
 		}
 
+	}
+
+	private int verificaRa(Aluno a) throws SQLException, ClassNotFoundException {
+		GenericDao gDao = new GenericDao();
+		MatriculaDao mDao = new MatriculaDao(gDao);
+		return mDao.verificaRa(a);
 	}
 
 	private String cadastrarMatricula(Matricula m) throws SQLException, ClassNotFoundException {

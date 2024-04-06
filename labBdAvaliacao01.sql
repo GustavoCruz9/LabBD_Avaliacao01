@@ -33,7 +33,7 @@ semestreLimite		int				not null,
 anoLimite			int				not null,
 turno				varchar(10)		not null
 Primary Key(cpf)
-Foreign Key(codCurso) references Curso(codCurso)
+Foreign Key(codCurso) references Curso(codCurso),
 constraint verificaDataConclusao check (dataConclusao2Grau > dataNascimento)
 )
 go
@@ -52,7 +52,7 @@ drop table conteudo
 */
 
 create table Disciplina (
-codDisciplina	int				not null /*identity(1001, 1)*/,
+codDisciplina	int				not null identity(1001, 1),
 codCurso		int				not null,
 nome			varchar(100)	not null,
 horasSemanais	time			not null,
@@ -448,6 +448,7 @@ begin
 						  d.codDisciplina = m.codDisciplina
 
 		return
+		
 end	
 
 -- Drop function calcularHoraFinal
@@ -596,9 +597,30 @@ begin
 				
 end
 
+-- PROCEDURE PARA VERIFICAÇÃO DE RA
+create procedure sp_validaRa(@ra char(9), @saida bit output)
+as
+	declare @raExistente char(9)
+
+	set @raExistente = null
+
+	set @raExistente = (select ra from aluno where ra = @ra)
+
+	if(@raExistente is null)
+	begin
+		set @saida = 0
+	end
+	else
+	begin
+		set @saida = 1
+	end
 
 	  
 -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES ---- TESTES ---- TESTES -- -- TESTES --
+
+declare @saida int
+exec sp_validaRa '202416328', @saida output
+print @saida
 
 
 SELECT row_number() over (order by (select null))as contagem, *
@@ -648,11 +670,13 @@ select diaSemana, codDisciplina, disciplina, horasSemanais, convert(varchar(5), 
 -- Inser��es na tabela Curso
 
 INSERT INTO Curso (codCurso, nome, cargaHoraria, sigla, notaEnade)
-VALUES (1, 'Engenharia da Computa��o', 4000, 'ECO', 4),
-       (2, 'Administra��o', 3200, 'ADM', 5),
+VALUES (1, 'Engenharia da Computação', 4000, 'ECO', 4),
+       (2, 'Administração', 3200, 'ADM', 5),
        (3, 'Direito', 3600, 'DIR', 3),
        (4, 'Medicina', 6000, 'MED', 5),
-       (5, 'Ci�ncia da Computa��o', 3800, 'CIC', 4);
+       (5, 'Ci�ncia da Computação', 3800, 'CIC', 4);
+
+select * from Curso
 
 -- Inser��es na tabela Aluno
 INSERT INTO Aluno (cpf, codCurso, ra, nome, dataNascimento, email, dataConclusao2Grau, emailCorporativo, instituicao2Grau, pontuacaoVestibular, posicaoVestibular, anoIngresso, semestreIngresso, semestreLimite, anoLimite, turno)
@@ -733,17 +757,18 @@ select cpf, codCurso, ra, nome, nomeSocial, dataNascimento, email, emailCorporat
 				dataConclusao2Grau, instituicao2Grau, pontuacaoVestibular,posicaoVestibular
 				from Aluno where cpf = '41707740860'
 
-INSERT INTO Disciplina (codDisciplina, codCurso, nome, horasSemanais, horaInicio, diaSemana)
+INSERT INTO Disciplina (codCurso, nome, horasSemanais, horaInicio, diaSemana)
 VALUES 
-( 1001, 1, 'Programação I', '3:30', '13:00', 'Segunda-feira'),
-(1002, 1, 'Programação II', '1:40', '13:00', 'Segunda-feira'),
-(1003, 1, 'Banco de Dados', '3:30', '14:50', 'Segunda-feira'),
-(1004, 1, 'Engenharia de Software', '1:40', '14:50:00', 'Segunda-feira'),
-(1005, 1, 'Laboratório de Hardware', '1:40', '16:40', 'Segunda-feira'),
-(1006, 1, 'Arquitetura de computadores', '3:30', '14:50', 'Sexta-feira'),
-(1007, 2, 'Gestao Empresarial', '1:40', '14:50', 'Segunda-feira') 
+( 1, 'Programação I', '3:30', '13:00', 'Segunda-feira'),
+( 1, 'Programação II', '1:40', '13:00', 'Segunda-feira'),
+( 1, 'Banco de Dados', '3:30', '14:50', 'Segunda-feira'),
+( 1, 'Engenharia de Software', '1:40', '14:50:00', 'Segunda-feira'),
+( 1, 'Laboratório de Hardware', '1:40', '16:40', 'Segunda-feira'),
+( 1, 'Arquitetura de computadores', '3:30', '14:50', 'Sexta-feira'),
+( 2, 'Gestao Empresarial', '1:40', '14:50', 'Segunda-feira') 
 
 select * from Disciplina
+
 
 INSERT INTO Matricula (anoSemestre, cpf, codDisciplina) VALUES 
 (20241, '41707740860', 1001),
@@ -768,4 +793,7 @@ where a.ra = '202416328' and d.codDisciplina = m.codDisciplina and m.cpf = a.cpf
 select * from Disciplina
 select * from Matricula
 delete Matricula
-
+/*
+use master
+drop database labBdAvaliacao01
+*/

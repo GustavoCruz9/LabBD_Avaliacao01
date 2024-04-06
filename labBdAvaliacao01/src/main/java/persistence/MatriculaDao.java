@@ -13,7 +13,7 @@ import model.Aluno;
 import model.Disciplina;
 import model.Matricula;
 
-public class MatriculaDao implements IMatricula<Matricula>{
+public class MatriculaDao implements IMatricula<Matricula> {
 
 	private GenericDao gDao;
 
@@ -72,11 +72,11 @@ public class MatriculaDao implements IMatricula<Matricula>{
 		ps.setString(1, a.getRa());
 
 		ResultSet rs = ps.executeQuery();
-		
+
 		while (rs.next()) {
 			Matricula m = new Matricula();
 			Disciplina d = new Disciplina();
-			
+
 			d.setCodigoDisciplina(rs.getInt("codDisciplina"));
 			d.setDisciplina(rs.getString("nome"));
 			d.setHorasSemanais(rs.getTime("horasSemanais").toLocalTime());
@@ -86,7 +86,7 @@ public class MatriculaDao implements IMatricula<Matricula>{
 
 			matriculas.add(m);
 		}
-		
+
 		return matriculas;
 	}
 
@@ -95,13 +95,30 @@ public class MatriculaDao implements IMatricula<Matricula>{
 		Connection c = gDao.getConnection();
 		String sql = "{CALL sp_cadastrarMatricula ( ?, ?, ? )}";
 		CallableStatement cs = c.prepareCall(sql);
-		
+
 		cs.setString(1, m.getAluno().getRa());
 		cs.setInt(2, m.getDisciplina().getCodigoDisciplina());
 		cs.registerOutParameter(3, Types.VARCHAR);
-		
+
 		cs.execute();
 		String saida = cs.getString(3);
+
+		cs.close();
+		c.close();
+
+		return saida;
+	}
+
+	public int verificaRa(Aluno a) throws SQLException, ClassNotFoundException {
+		Connection c = gDao.getConnection();
+		String sql = "{CALL sp_validaRa ( ?, ? )}";
+		CallableStatement cs = c.prepareCall(sql);
+
+		cs.setString(1, a.getRa());
+		cs.registerOutParameter(2, Types.VARCHAR);
+
+		cs.execute();
+		int saida = cs.getInt(2);
 
 		cs.close();
 		c.close();
