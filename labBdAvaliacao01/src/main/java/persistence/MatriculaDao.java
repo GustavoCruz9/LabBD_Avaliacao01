@@ -1,9 +1,11 @@
 package persistence;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +13,7 @@ import model.Aluno;
 import model.Disciplina;
 import model.Matricula;
 
-public class MatriculaDao implements IMatricula{
+public class MatriculaDao implements IMatricula<Matricula>{
 
 	private GenericDao gDao;
 
@@ -28,7 +30,7 @@ public class MatriculaDao implements IMatricula{
 		String sql = """
 				select diaSemana, codDisciplina, disciplina, horasSemanais,
 				horaInicio, statusMatricula
-				from fn_realizaMatricula( ? )
+				from fn_popularMatricula( ? )
 				""";
 		PreparedStatement ps = c.prepareStatement(sql);
 
@@ -43,7 +45,7 @@ public class MatriculaDao implements IMatricula{
 			d.setDiaSemana(rs.getString("diaSemana").toLowerCase());
 			d.setCodigoDisciplina(rs.getInt("codDisciplina"));
 			d.setDisciplina(rs.getString("disciplina"));
-			d.setHorasSemanais(rs.getInt("horasSemanais"));
+			d.setHorasSemanais(rs.getTime("horasSemanais").toLocalTime());
 			d.setHoraInicio(rs.getTime("horaInicio").toLocalTime());
 			m.setDisciplina(d);
 			m.setStatus(rs.getString("statusMatricula"));
@@ -77,7 +79,7 @@ public class MatriculaDao implements IMatricula{
 			
 			d.setCodigoDisciplina(rs.getInt("codDisciplina"));
 			d.setDisciplina(rs.getString("nome"));
-			d.setHorasSemanais(rs.getInt("horasSemanais"));
+			d.setHorasSemanais(rs.getTime("horasSemanais").toLocalTime());
 			d.setHoraInicio(rs.getTime("horaInicio").toLocalTime());
 			m.setDisciplina(d);
 			m.setStatus(rs.getString("statusMatricula"));
@@ -89,9 +91,22 @@ public class MatriculaDao implements IMatricula{
 	}
 
 	@Override
-	public String iMatriucla(Aluno a) throws SQLException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+	public String iMatricula(Matricula m) throws SQLException, ClassNotFoundException {
+		Connection c = gDao.getConnection();
+		String sql = "{CALL sp_cadastrarMatricula ( ?, ?, ? )}";
+		CallableStatement cs = c.prepareCall(sql);
+		
+		cs.setString(1, m.getAluno().getRa());
+		cs.setInt(2, m.getDisciplina().getCodigoDisciplina());
+		cs.registerOutParameter(3, Types.VARCHAR);
+		
+		cs.execute();
+		String saida = cs.getString(3);
+
+		cs.close();
+		c.close();
+
+		return saida;
 	}
 
 }

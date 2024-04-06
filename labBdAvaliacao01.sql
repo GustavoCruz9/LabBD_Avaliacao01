@@ -1,5 +1,5 @@
 ﻿-- use master
---	 drop database labBdAvaliacao01
+-- drop database labBdAvaliacao01
 
 create database labBdAvaliacao01
 go
@@ -96,7 +96,7 @@ as
 
 --verifica se cpf tem 11 digitos
 if(LEN(@cpf) = 11)begin
-	--VERIFICA��O DE DIGITOS REPETIDOS
+	--VERIFICACAO DE DIGITOS REPETIDOS
 	while(@i < 10) begin
 		if(SUBSTRING(@cpf, 1,1) = SUBSTRING(@cpf, @x, 1)) begin
 			set @status = @status + 1
@@ -241,7 +241,7 @@ begin
 	return @nome
 end
 
---PROCEDURE QUE VALIDA SE CPF � UNICO NO BANCO DE DADOS DO SISTEMA
+--PROCEDURE QUE VALIDA SE CPF é UNICO NO BANCO DE DADOS DO SISTEMA
 go
 create procedure sp_validaCpfDuplicado(@cpf char(11), @validaCpfDuplicado bit output)
 as
@@ -337,7 +337,7 @@ as
 							end
 							else
 							begin
-									raiserror('Opera��o inv�lida', 16, 1)
+									raiserror('Operação inválida', 16, 1)
 							end
 				end
 				else
@@ -473,7 +473,7 @@ end
 
 -- PROCEDURE sp_cadastrarMatricula
 -- drop procedure sp_cadastrarMatricula
-
+delete Matricula where codDisciplina = 1001
 select * from Matricula
 select * from Disciplina
 
@@ -481,9 +481,16 @@ create procedure sp_cadastrarMatricula(@ra char(9), @codDisciplinaRequerida int,
 as
 		declare @codCurso int,
 				@diaSemana varchar(15),
-				@disciplinaRequerida time,
-				@disciplinaMatriculada time,
-				@cpf char(11)
+				@horaInicioDisciplinaRequerida time,
+				@horaInicioDisciplinaMatriculada time,
+				@horaFinalDisciplinaMatriculada time,
+				@horaFinalDisciplinaRequerida time,
+				@qtdMatricula int,
+				@cpf char(11),
+				@anoSemestre varchar(5),
+				@valida bit
+
+		set @valida = 0
 
 		set @cpf = (select cpf from Aluno where ra = @ra)
 
@@ -491,88 +498,79 @@ as
 
 		set @diaSemana = (select diaSemana from Disciplina where codDisciplina = @codDisciplinaRequerida)
 
-		declare @horaInicioDisciplinaRequerida time,
-				@horaInicioDisciplinaMatriculada time,
-				@horaFinalDisciplinaMatriculada time,
-				@horaFinalDisciplinaRequerida time,
-				@qtdMatricula int
+		set @horaInicioDisciplinaRequerida = (select horaInicio from Disciplina where codDisciplina = @codDisciplinaRequerida)
 
-		set @horaInicioDisciplinaRequerida =  (select horaInicio 
-									from Disciplina 
-									where diaSemana =  @diaSemana
-									and codCurso = @codCurso 
-									and codDisciplina = @codDisciplinaRequerida)
-
-		set @horaFinalDisciplinaRequerida = (select horaFinal 
-									from Disciplina 
-									where diaSemana = @diaSemana 
-									and codCurso = @codCurso 
-									and codDisciplina = @codDisciplinaRequerida)
-
+		set @horaFinalDisciplinaRequerida = (select horaFinal from Disciplina where codDisciplina = @codDisciplinaRequerida)
+									
 		set @qtdMatricula = (select count(*) from matricula m, Disciplina d 
 							 where lower(m.statusMatricula) = lower('Pendente') 
 							 and m.codDisciplina = d.codDisciplina and
 							 d.codCurso = @codCurso and d.diaSemana = @diaSemana)
 
+		if (@qtdMatricula = 0)
+		begin
+
+			set @anoSemestre = dbo.fn_obterAnoSemestre()
+
+			insert into Matricula (anoSemestre, cpf, codDisciplina) values
+			(@anoSemestre, @cpf, @codDisciplinaRequerida)
+
+			set @saida = 'Matricula realizada com sucesso'
+		end
+
+		create table #matriculastemp(
+			horaInicioDisciplinaMatriculada time,
+			horaFinalDisciplinaMatriculada time,
+		)
+		
+		insert into #matriculastemp (horaInicioDisciplinaMatriculada, horaFinalDisciplinaMatriculada)
+									SELECT d.horaInicio, d.horaFinal
+									FROM matricula m, Disciplina d 
+									WHERE LOWER(m.statusMatricula) = LOWER('Pendente') 
+									AND d.codCurso = @codCurso 
+									AND d.diaSemana = @diaSemana and
+									m.codDisciplina = d.codDisciplina
+
 		while(@qtdMatricula > 0)
 		begin
-				
-				declare @top int,
-						@codDisciplinaMatriculada int
+			
 
-				set @top = @qtdMatricula
+				set @horaInicioDisciplinaMatriculada = (select top 1 horaInicioDisciplinaMatriculada from #matriculastemp)
 
-				set @codDisciplinaMatriculada = (select top (@top) d.codDisciplina from matricula m, Disciplina d 
-											  where lower(m.statusMatricula) = lower('Pendente') 
-											  and m.codDisciplina = d.codDisciplina and
-											  d.codCurso = @codCurso and d.diaSemana = @diaSemana)
+				set @horaFinalDisciplinaMatriculada = (select top 1 horaFinalDisciplinaMatriculada from #matriculastemp)
 
+				delete top (1) from #matriculastemp
 
-				set @horaInicioDisciplinaMatriculada = (select d.horaInicio 
-											  from matricula m, Disciplina d 
-											  where lower(m.statusMatricula) = lower('Pendente') 
-											  and m.codDisciplina = d.codDisciplina and
-											  d.codCurso = @codCurso and d.diaSemana = @diaSemana
-											  and d.codDisciplina = @codDisciplinaMatriculada)
-
-				set @horaFinalDisciplinaMatriculada = (select d.horaFinal 
-											  from matricula m, Disciplina d 
-											  where lower(m.statusMatricula) = lower('Pendente') 
-											  and m.codDisciplina = d.codDisciplina and
-											  d.codCurso = @codCurso and d.diaSemana = @diaSemana
-											  and d.codDisciplina = @codDisciplinaMatriculada)
-
-		
-				if(@horaInicioDisciplinaRequerida != @horaInicioDisciplinaMatriculada) 
+				if((@horaInicioDisciplinaRequerida not between @horaInicioDisciplinaMatriculada and @horaFinalDisciplinaMatriculada)
+				and 
+				(@horaFinalDisciplinaRequerida not between @horaInicioDisciplinaMatriculada and @horaFinalDisciplinaMatriculada))
 				begin
-							if((@horaInicioDisciplinaRequerida not between @horaInicioDisciplinaMatriculada and @horaFinalDisciplinaMatriculada)
-								and 
-								(@horaFinalDisciplinaRequerida not between @horaInicioDisciplinaMatriculada and @horaFinalDisciplinaMatriculada))
-							begin
-									print 'entrou'
-									declare @anoSemestre varchar(5)
 
-									set @anoSemestre = dbo.fn_obterAnoSemestre()
+							set @valida  = 1
 
-									insert into Matricula (anoSemestre, cpf, codDisciplina) values
-									(@anoSemestre, @cpf, @codDisciplinaRequerida)
-
-									set @saida = 'Matricula realizada com sucesso'
-
-							end
-							else
-							begin
-								raiserror ('Já existe um materia cadastrada nesse intervalo de horario 2', 16, 1)
-							end		
 				end
 				else
 				begin
-						raiserror('Já existe um materia cadastrada nesse intervalo de horario', 16, 1)
-				end
+							set @valida = 0
+							drop table #matriculastemp
+							raiserror('Já existe um materia cadastrada nesse intervalo de horario', 16, 1)
+							return
+				end		
 
 				set @qtdMatricula = @qtdMatricula - 1
+				
 		end
 
+		if(@valida = 1)
+		begin
+				set @anoSemestre = dbo.fn_obterAnoSemestre()
+
+				insert into Matricula (anoSemestre, cpf, codDisciplina) values
+						(@anoSemestre, @cpf, @codDisciplinaRequerida)
+
+				set @saida = 'Matricula realizada com sucesso'
+		end
+		
 
 
 -- FUNCTION PARA OBTER ANOSEMESTRE
@@ -602,20 +600,41 @@ end
 	  
 -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES -- -- TESTES ---- TESTES ---- TESTES -- -- TESTES --
 
+
+SELECT row_number() over (order by (select null))as contagem, *
+        FROM matricula m, Disciplina d 
+        WHERE LOWER(m.statusMatricula) = LOWER('Pendente') 
+            AND d.codCurso = 1 
+            AND d.diaSemana = 'Segunda-feira' and
+			m.codDisciplina = d.codDisciplina
+
+declare @saida varchar(150)
+exec sp_cadastrarMatricula '202416328', 1004, @saida output
+print @saida
+
 declare @saida varchar(150)
 exec sp_cadastrarMatricula '202416328', 1001, @saida output
 print @saida
 
+declare @saida varchar(150)
+exec sp_cadastrarMatricula '202416328', 1003, @saida output
+print @saida
+
+declare @saida varchar(150)
+exec sp_cadastrarMatricula '202416328', 1004, @saida output
+print @saida
+
+declare @saida varchar(150)
+exec sp_cadastrarMatricula '202416328', 1005, @saida output
+print @saida
+
+select * from Matricula
+delete Matricula
+
+
 declare @resultado varchar(5);
 set @resultado = dbo.fn_obterAnoSemestre();
 print @resultado;
-
-declare @top int
-set @top = 1
-select top (@top) d.codDisciplina from matricula m, Disciplina d 
-											  where lower(m.statusMatricula) = lower('Pendente') 
-											  and m.codDisciplina = d.codDisciplina and
-											  d.codCurso = 1 and d.diaSemana = 'Segunda-feira'
 
 select diaSemana, codDisciplina, disciplina, horasSemanais, convert(varchar(5), horaInicio, 108) as horaInicio, statusMatricula
  from fn_realizaMatricula('202416328')

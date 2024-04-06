@@ -13,7 +13,7 @@ public class Disciplina {
 
 	private int codigoDisciplina;
 	private String disciplina;
-	private int horasSemanais;
+	private LocalTime horasSemanais;
 	private LocalTime horaInicio; 
 	private String diaSemana;
 	

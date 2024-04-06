@@ -166,9 +166,6 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 		cs.setInt(12, a.getAnoIngresso());
 		cs.setInt(13, a.getSemestreIngresso());
 		cs.setInt(14, a.getSemestreLimite());
-//		Telefone[] telefones = a.getTelefones();
-//		cs.setString(15, telefones[0].getNumero());
-//		cs.setString(16, telefones[1].getNumero());
 		cs.registerOutParameter(15, Types.VARCHAR);
 
 		cs.execute();

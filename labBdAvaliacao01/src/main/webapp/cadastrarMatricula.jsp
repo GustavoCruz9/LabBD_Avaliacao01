@@ -16,7 +16,7 @@
 	<main>
 		<h1>Cadastro de Matrícula</h1>
 
-		<form action="matricula" method="post" class="formMatricula">
+		<form action="matricula" method="get" class="formMatricula">
 			<div class="cpfMatricula">
 				<div class="pesquisaCpf">
 					<input type="text" name="pesquisaRa" id="pesquisaRa"
@@ -24,9 +24,13 @@
 						type="submit" value="🔎" class="btnCPF" id="botao" name="botao">
 				</div>
 			</div>
-			
-			<br>
-			<br>
+		</form>
+
+
+		<form action="matricula" method="post" class="formMatricula">
+
+			<input type="hidden" name="pesquisaRa" id="pesquisaRa"
+				value="${param.pesquisaRa}"> <br>
 
 			<div align="center">
 				<c:if test="${not empty erro }">
@@ -44,9 +48,8 @@
 					</h3>
 				</c:if>
 			</div>
-			
-			<br>
-			<br>
+
+			<br> <br>
 
 			<div class="diasSemana">
 				<table class="segunda">
@@ -66,14 +69,15 @@
 					<tbody>
 						<c:forEach var="d" items="${disciplinas }">
 							<c:if test="${d.disciplina.diaSemana eq 'segunda-feira' }">
-								<tr>
+									<tr>
 									<td><c:out value="${d.disciplina.codigoDisciplina}"></c:out>
 									<td><c:out value="${d.disciplina.disciplina}"></c:out>
 									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
 									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
 									<td><c:out value="${d.status}"></c:out>
-									<td class="status"><input type="submit" id="matricular"
-										name="matricular" value="matricular"></td>
+									<td class="status"><input type="submit" id="botao"
+										name="botao" value="${d.disciplina.codigoDisciplina}">
+									</td>
 								</tr>
 							</c:if>
 						</c:forEach>
@@ -102,9 +106,9 @@
 									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
 									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
 									<td><c:out value="${d.status}"></c:out>
-									<td class="status"><input type="submit" id="matricular"
-										name="matricular" value="matricular"></td>
-								</tr>
+									<td class="status"><input type="submit" id="botao"
+										name="botao" value="${d.disciplina.codigoDisciplina}">
+									</td>
 							</c:if>
 						</c:forEach>
 					</tbody>
@@ -132,9 +136,9 @@
 									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
 									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
 									<td><c:out value="${d.status}"></c:out>
-									<td class="status"><input type="submit" id="matricular"
-										name="matricular" value="matricular"></td>
-								</tr>
+									<td class="status"><input type="submit" id="botao"
+										name="botao" value="${d.disciplina.codigoDisciplina}">
+									</td>
 							</c:if>
 						</c:forEach>
 					</tbody>
@@ -162,9 +166,9 @@
 									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
 									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
 									<td><c:out value="${d.status}"></c:out>
-									<td class="status"><input type="submit" id="matricular"
-										name="matricular" value="matricular"></td>
-								</tr>
+									<td class="status"><input type="submit" id="botao"
+										name="botao" value="${d.disciplina.codigoDisciplina}">
+									</td>
 							</c:if>
 						</c:forEach>
 					</tbody>
@@ -192,16 +196,14 @@
 									<td><c:out value="${d.disciplina.horasSemanais}"></c:out>
 									<td><c:out value="${d.disciplina.horaInicio}"></c:out>
 									<td><c:out value="${d.status}"></c:out>
-									<td class="status"><input type="submit" id="matricular"
-										name="matricular" value="matricular"></td>
-								</tr>
+									<td class="status"><input type="submit" id="botao"
+										name="botao" value="${d.disciplina.codigoDisciplina}">
+									</td>
 							</c:if>
 						</c:forEach>
 					</tbody>
 				</table>
 			</div>
-
-			<input type="submit" value="Matricular" class="btnMatricular">
 		</form>
 
 	</main>
