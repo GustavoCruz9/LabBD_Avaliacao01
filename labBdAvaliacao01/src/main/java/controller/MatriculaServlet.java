@@ -42,6 +42,9 @@ public class MatriculaServlet extends HttpServlet {
 
 			if(verificaRa(a) == 1) {
 				disciplinas = listarDisciplinas(a);
+				if(disciplinas.isEmpty()) {
+					erro = "Aluno concluiu todas as disciplinas de seu curso";
+				}
 			} else {
 				erro = "RA inválido";
 			}
@@ -89,6 +92,9 @@ public class MatriculaServlet extends HttpServlet {
 			if (cmd.contains("🔍")) {
 
 				matriculas = listarMatriculas(a);
+				if(matriculas.isEmpty()) {
+					erro = "O aluno do Ra " + pesquisaRa + " não possui matriculas";
+				}
 
 			} else {
 				saida = cadastrarMatricula(m);

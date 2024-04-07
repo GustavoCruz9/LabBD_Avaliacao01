@@ -131,6 +131,9 @@ public class AlunoServlet extends HttpServlet {
 
 			if (cmd.contains("Listar")) {
 				alunos = listarAlunos();
+				if(alunos.isEmpty()) {
+					erro = "Não existem alunos cadastrados";
+				}
 			}
 
 		} catch (SQLException | ClassNotFoundException e) {

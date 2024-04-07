@@ -18,6 +18,25 @@
 			<h1>Aluno</h1>
 			<h3>Cadastrar / Alterar</h3>
 		</div>
+		
+		<div align="center">
+			<c:if test="${not empty erro }">
+				<h2>
+					<b><c:out value="${erro }" /></b>
+				</h2>
+			</c:if>
+		</div>
+
+		<br />
+		<div align="center">
+			<c:if test="${not empty saida }">
+				<h3>
+					<b><c:out value="${saida }" /></b>
+				</h3>
+			</c:if>
+		</div>
+		
+		<br/>
 
 		<form action="aluno" method="post">
 
@@ -83,22 +102,7 @@
 		</form>
 
 		<br />
-		<div align="center">
-			<c:if test="${not empty erro }">
-				<h2>
-					<b><c:out value="${erro }" /></b>
-				</h2>
-			</c:if>
-		</div>
-
-		<br />
-		<div align="center">
-			<c:if test="${not empty saida }">
-				<h3>
-					<b><c:out value="${saida }" /></b>
-				</h3>
-			</c:if>
-		</div>
+		
 
 	</main>
 
