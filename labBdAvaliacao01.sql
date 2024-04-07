@@ -44,13 +44,6 @@ Primary key(numero, cpf)
 Foreign key(cpf) references Aluno(cpf)
 )
 go
-/*	EXCLUIR
-drop table Disciplina
-drop table matricula
-drop table conteudo
-	EXCLUIR
-*/
-
 -- Drop function calcularHoraFinal
 -- FUNCTION CalcularHoraFinal 
 create function calcularHoraFinal (@horaInicio time, @horasSemanais time)
