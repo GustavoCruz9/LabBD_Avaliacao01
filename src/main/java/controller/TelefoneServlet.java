@@ -46,24 +46,24 @@ public class TelefoneServlet extends HttpServlet {
 		List<Aluno> alunos = new ArrayList<>();
 		List<Telefone> telefones = new ArrayList<>();
 
-//		if (cmd.contains("Confirmar")) {
-//			if (cpf.trim().isEmpty() || telefoneNovo.trim().isEmpty()) {
-//				erro = "CPF ou telefone vazios";
-//			} else if (telefoneAntigo.trim().isEmpty()) {
-//				erro = "Por favor, digite o telefone a ser atualizado";
-//			}
-//		} else if (cmd.contains("Cadastrar") || cmd.contains("Excluir") ) {
-//			if (cpf.trim().isEmpty() || telefoneNovo.trim().isEmpty()) {
-//				erro = "CPF ou telefone vazios";
-//			}
-//		}
-//		
-//		if (!erro.isEmpty()) {
-//		    request.setAttribute("erro", erro);
-//		    RequestDispatcher rd = request.getRequestDispatcher("cadastrarTelefone.jsp");
-//		    rd.forward(request, response);
-//		    return; 
-//		}
+		if (cmd.contains("Confirmar")) {
+			if (cpf.trim().isEmpty() || telefoneNovo.trim().isEmpty()) {
+				erro = "CPF ou telefone vazios";
+			} else if (telefoneAntigo.trim().isEmpty()) {
+				erro = "Por favor, digite o telefone a ser atualizado";
+			}
+		} else if (cmd.contains("Cadastrar") || cmd.contains("Excluir")) {
+			if (cpf.trim().isEmpty() || telefoneNovo.trim().isEmpty()) {
+				erro = "CPF ou telefone vazios";
+			}
+		}
+
+		if (!erro.isEmpty()) {
+			request.setAttribute("erro", erro);
+			RequestDispatcher rd = request.getRequestDispatcher("cadastrarTelefone.jsp");
+			rd.forward(request, response);
+			return;
+		}
 
 		tel.setNumero(telefoneNovo);
 		telefones.add(tel);
@@ -93,6 +93,9 @@ public class TelefoneServlet extends HttpServlet {
 			}
 			if (cmd.contains("Listar")) {
 				alunos = listarTelefones();
+				if (alunos.isEmpty()) {
+					erro = "Não existe nenhum telefone cadastrado";
+				}
 			}
 		} catch (SQLException | ClassNotFoundException e) {
 			erro = e.getMessage();

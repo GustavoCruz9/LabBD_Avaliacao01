@@ -172,6 +172,7 @@ if(LEN(@cpf) = 11)begin
 					set @valido  = 1
 			end else begin
 					set @valido  = 0
+					raiserror('CPF inexistente', 16, 1)
 			end
 
 		end else begin
@@ -179,15 +180,16 @@ if(LEN(@cpf) = 11)begin
 		end
 
 	end else begin
-		raiserror('CPF invalido, todos os digitos s�o iguais', 16, 1)
+		raiserror('CPF invalido, todos os digitos sao iguais', 16, 1)
 	end
 
 end else begin
-	raiserror('CPF invalido, n�mero de caracteres incorreto', 16, 1)
+	raiserror('CPF invalido, numero de caracteres incorreto', 16, 1)
 end
 
 
 --PROCEDURE QUE VALIDA SE ALUNO TEM 16 ANOS OU MAIS
+-- drop procedure sp_validaIdade
 go
 create procedure sp_validaIdade(@dataNascimento date, @validaIdade bit output)
 as
@@ -197,9 +199,10 @@ as
 	else
 	begin
 		set @validaIdade = 0
+		raiserror('A idade é menor que 16 anos', 16, 1)
 	end
 
---PROCEDURE QUE CALCULA 5 ANSO DO ANO DE INGRESSSO
+--PROCEDURE QUE CALCULA 5 ANSO DO ANO DE INGRESSSO	
 go
 create function fn_anoLimite(@anoIngresso int)
 returns int
@@ -274,6 +277,57 @@ as
 		set @validaCpfDuplicado = 0
 	end
 
+-- PROCEDURE PARA VERIFICAÇÃO DE RA
+go
+create procedure sp_validaRa(@ra char(9), @saida bit output)
+as
+	declare @raExistente char(9)
+
+	set @raExistente = null
+
+	set @raExistente = (select ra from aluno where ra = @ra)
+
+	if(@raExistente is null)
+	begin
+		set @saida = 0
+	end
+	else
+	begin
+		set @saida = 1
+	end
+
+--PROCEDURE QUE VALIDA SE CURSO É EXISTENTE
+go
+create procedure sp_validaCurso(@codCurso int, @validaCurso bit output)
+as
+	set @codCurso = (select codCurso from Curso where codCurso = @codCurso)
+
+	if(@codCurso is not null)
+	begin
+		set @validaCurso = 1
+	end
+	else 
+	begin
+		set @validaCurso = 0
+		raiserror('O codigo do curso é invalido', 16, 1)
+	end
+
+--PROCEDURE QUE VALIDA SE TELEFONE EXISTE
+-- drop procedure sp_validaTelefone
+go
+create procedure sp_validaTelefone(@telefone char(11), @validaTelefone bit output)
+as
+	set @telefone = (select numero from Telefone where numero = @telefone)
+
+	if(@telefone is not null)
+	begin
+		set @validaTelefone = 1
+	end
+	else 
+	begin
+		set @validaTelefone = 0
+	end
+
 --PROCEDURE PARA INSERIR E ATUALIZAR ALUNO
 -- drop procedure sp_iuAluno
 go
@@ -290,79 +344,77 @@ as
 				exec sp_validaIdade @dataNascimento, @validaIdade output
 				if(@validaIdade = 1)
 				begin
-						if(upper(@op) = 'I')						
-						begin
+							declare @validaCurso bit
+							exec sp_validaCurso @codCurso, @validaCurso output
+							if(@validaCurso = 1)
+							begin		
+										if(upper(@op) = 'I')						
+										begin
 
-								declare @validarDuplicidadeCpf bit
-								exec sp_validaCpfDuplicado @cpf, @validarDuplicidadeCpf output
-								if(@validarDuplicidadeCpf = 1)
-								begin
-											declare	@ra char(9),
-													@emailCorporativo varchar(100),
-													@random1 int,
-													@random2 int, 
-													@random3 int, 
-													@random4 int,
-													@status bit
+												declare @validarDuplicidadeCpf bit
+												exec sp_validaCpfDuplicado @cpf, @validarDuplicidadeCpf output
+												if(@validarDuplicidadeCpf = 1)
+												begin
+															declare	@ra char(9),
+																	@emailCorporativo varchar(100),
+																	@random1 int,
+																	@random2 int, 
+																	@random3 int, 
+																	@random4 int,
+																	@status bit
 
-											set @status = 0
+															set @status = 0
 
-											while(@status = 0)begin
+															while(@status = 0)begin
 									
-												set @random1 = CAST(RAND() * 10 as int)
-												set @random2 = CAST(RAND() * 10 as int)
-												set @random3 = CAST(RAND() * 10 as int)
-												set @random4 = CAST(RAND() * 10 as int)
+																set @random1 = CAST(RAND() * 10 as int)
+																set @random2 = CAST(RAND() * 10 as int)
+																set @random3 = CAST(RAND() * 10 as int)
+																set @random4 = CAST(RAND() * 10 as int)
 
-												set @status = (select statusRa from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+																set @status = (select statusRa from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
 								
-											end
+															end
 
-											set @ra = (select ra from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
+															set @ra = (select ra from fn_criaRa(2024, 1, @random1, @random2, @random3, @random4))
 								
 
-											set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
+															set @emailCorporativo = (select dbo.fn_criaEmailCorporativo(@nome, @ra) as emailCorporativo)
 
-											declare @anolimite int
-											set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
+															declare @anolimite int
+															set @anoLimite = (select dbo.fn_anoLimite(@anoIngresso) as anoLimite)
 								
-											insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
-																 @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
+															insert into Aluno values (@cpf, @codCurso, @ra, @nome, @nomeSocial, @dataNascimento, @email, @dataConclusao2Grau, @emailCorporativo, @instituicao2Grau,
+																				 @pontuacaoVestibular, @posicaoVestibular, @anoIngresso, @semestreIngresso, @semestreLimite, @anolimite, 'Vespertino')
 
 											
-											set @saida = 'Aluno inserido com sucesso'
-								end
-								else
-								begin
-											raiserror('CPF já cadastrado', 16, 1)
-								end
-						end
-						else
-							if(upper(@op) = 'U')
-							begin
+															set @saida = 'Aluno inserido com sucesso'
+												end
+												else
+												begin
+															raiserror('CPF já cadastrado', 16, 1)
+												end
+										end
+										else
+											if(upper(@op) = 'U')
+											begin
 									
-									update Aluno
-									set nome = @nome, dataNascimento = @dataNascimento, nomeSocial = @nomeSocial, email = @email, codCurso = @codCurso, dataConclusao2Grau = @dataConclusao2Grau, 
-									instituicao2Grau = @instituicao2Grau, pontuacaoVestibular = @pontuacaoVestibular, posicaoVestibular = @posicaoVestibular
-									where cpf = @cpf
+													update Aluno
+													set nome = @nome, dataNascimento = @dataNascimento, nomeSocial = @nomeSocial, email = @email, codCurso = @codCurso, dataConclusao2Grau = @dataConclusao2Grau, 
+													instituicao2Grau = @instituicao2Grau, pontuacaoVestibular = @pontuacaoVestibular, posicaoVestibular = @posicaoVestibular
+													where cpf = @cpf
 
 										
-									set @saida = 'Aluno atualizado com sucesso'	
-							end
-							else
-							begin
-									raiserror('Operação inválida', 16, 1)
-							end
-				end
-				else
-				begin
-						raiserror('Idade inv�lida, apenas alunos com 16 ou mais anos podem ser cadastrados', 16, 1)
-				end
+													set @saida = 'Aluno atualizado com sucesso'	
+											end
+											else
+											begin
+													raiserror('Operação invalida', 16, 1)
+											end
+							end	
+				end	
 		end
-		else
-		begin
-			raiserror('CPF Inválido, verifique e tente novamente.', 16, 1)
-		end
+		
 
 --Procedure sp_iudTelefone	
 -- drop procedure sp_iudTelefone
@@ -370,6 +422,8 @@ go
 create procedure sp_iudTelefone(@op char(1), @cpf char(11), @telefoneAntigo char(11) null, @telefoneNovo char(11), 
 								@saida  varchar(150) output)
 as
+		declare @validaTelefone bit 
+
 		declare @validarExistenciaCpf bit
 		exec sp_validaCpfDuplicado @cpf, @validarExistenciaCpf output
 
@@ -381,42 +435,65 @@ as
 						begin
 								if(len(@telefoneAntigo) = 11)
 								begin
-
-									update Telefone set numero = @telefoneNovo where cpf = @cpf and numero = @telefoneAntigo
-
-									set @saida = 'Telefone atualizado com sucesso'
-
-								end
-								else
-								begin
-									raiserror('Tamanho de telefone incorreto', 16, 1)
-								end
-						end
-						else
-								if(upper(@op) = 'D')
-								begin
-										begin try
-
-											delete Telefone where cpf = @cpf and numero = @telefoneNovo
-
-											set @saida = 'Telefone excluido com sucesso'
-
-										end try
-										begin catch
-												raiserror('Telefone inexistente ou invalidado', 16, 1)
-										end catch
-								end
-								else
-										if(upper(@op) = 'I')
+										
+										exec sp_validaTelefone @telefoneAntigo, @validaTelefone output
+										if(@validaTelefone = 1)
 										begin
-												insert into Telefone (cpf, numero) values (@cpf, @telefoneNovo)
 
-												set @saida = 'Telefone cadastrado com sucesso'
+													update Telefone set numero = @telefoneNovo where cpf = @cpf and numero = @telefoneAntigo
+
+													set @saida = 'Telefone atualizado com sucesso'
+
+													return
 										end
 										else
 										begin
-												raiserror('Operação inválida', 16, 1)
+													raiserror('O telefone não existe no banco de dados', 16, 1)
 										end
+								end
+								else
+								begin
+													raiserror('Tamanho de telefone incorreto', 16, 1)
+								end
+						end
+						
+						if(upper(@op) = 'D')
+						begin
+										exec sp_validaTelefone @telefoneNovo, @validaTelefone output
+										if(@validaTelefone = 1)
+										begin
+														delete Telefone where cpf = @cpf and numero = @telefoneNovo
+
+														set @saida = 'Telefone excluido com sucesso'
+														
+														return
+										end
+										else
+										begin
+														raiserror('O telefone não existe no banco de dados', 16, 1)
+										end
+						end
+								
+						if(upper(@op) = 'I')
+						begin
+									exec sp_validaTelefone @telefoneNovo, @validaTelefone output
+									if(@validaTelefone = 0)
+									begin
+												insert into Telefone (cpf, numero) values (@cpf, @telefoneNovo)
+
+												set @saida = 'Telefone cadastrado com sucesso'
+
+												return
+									end
+									else
+									begin
+												raiserror('O telefone ja existe no banco de dados', 16, 1)
+									end
+						end
+						else
+						begin
+									raiserror('Operação invalida', 16, 1)
+						end
 				end 
 				else
 				begin
@@ -589,26 +666,6 @@ as
 
 				set @saida = 'Matricula realizada com sucesso'
 		end
-
--- PROCEDURE PARA VERIFICAÇÃO DE RA
-go
-create procedure sp_validaRa(@ra char(9), @saida bit output)
-as
-	declare @raExistente char(9)
-
-	set @raExistente = null
-
-	set @raExistente = (select ra from aluno where ra = @ra)
-
-	if(@raExistente is null)
-	begin
-		set @saida = 0
-	end
-	else
-	begin
-		set @saida = 1
-	end
-
 
 --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT --- --- INSERT ---
 

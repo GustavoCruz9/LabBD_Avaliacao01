@@ -72,8 +72,8 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 
 		Connection c = gDao.getConnection();
 		String sql = """
-				SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo, 
-				a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso, 
+				SELECT a.cpf, a.codCurso, a.ra, a.nome, a.nomeSocial, a.dataNascimento, a.email, a.emailCorporativo,
+				a.dataConclusao2Grau, a.instituicao2Grau, a.pontuacaoVestibular, a.posicaoVestibular, a.anoIngresso,
 				a.semestreIngresso, a.anoIngresso, a.anoLimite, a.semestreLimite,
 				(SELECT t1.numero FROM Telefone t1 WHERE t1.cpf = a.cpf AND t1.numero IS NOT NULL ORDER BY t1.numero OFFSET 0 ROWS FETCH NEXT 1 ROW ONLY) AS telefone1,
 				(SELECT t2.numero FROM Telefone t2 WHERE t2.cpf = a.cpf AND t2.numero IS NOT NULL ORDER BY t2.numero OFFSET 1 ROWS FETCH NEXT 1 ROW ONLY) AS telefone2
@@ -90,7 +90,7 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 			Curso cu = new Curso();
 			Telefone tel = new Telefone();
 
-			List<Telefone> telefones =  new ArrayList<>();
+			List<Telefone> telefones = new ArrayList<>();
 
 			a.setCpf(rs.getString("cpf"));
 			cu.setCodigo(rs.getInt("codCurso"));
@@ -116,23 +116,23 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 			a.setSemestreIngresso(rs.getInt("semestreIngresso"));
 			a.setSemestreLimite(rs.getInt("semestreLimite"));
 			a.setAnoLimite(rs.getInt("anoLimite"));
-			
-			if(rs.getString("telefone1") != null) {
+
+			if (rs.getString("telefone1") != null) {
 				tel.setNumero(rs.getString("telefone1"));
-			}else {
+			} else {
 				tel.setNumero("Pendente");
-				
+
 			}
-			
+
 			telefones.add(tel);
 			tel = new Telefone();
-			
-			if(rs.getString("telefone2") != null) {
+
+			if (rs.getString("telefone2") != null) {
 				tel.setNumero(rs.getString("telefone2"));
-			}else {
+			} else {
 				tel.setNumero("Não Cadastrado");
 			}
-			
+
 			telefones.add(tel);
 
 			a.setTelefones(telefones);
@@ -176,4 +176,24 @@ public class AlunoDao implements IConsultar<Aluno>, IAluno, IListar<Aluno> {
 
 		return saida;
 	}
+
+	@Override
+	public int verificaCpf(Aluno a) throws SQLException, ClassNotFoundException {
+		Connection c = gDao.getConnection();
+		String sql = "{CALL sp_consultaCpf ( ?, ? )}";
+		CallableStatement cs = c.prepareCall(sql);
+
+		cs.setString(1, a.getCpf());
+		cs.registerOutParameter(2, Types.VARCHAR);
+
+		cs.execute();
+		int saida = cs.getInt(2);
+
+		cs.close();
+		c.close();
+
+		return saida;
+
+	}
+
 }

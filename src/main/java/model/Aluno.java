@@ -30,6 +30,4 @@ public class Aluno {
 	private int anoLimite;
 	private int semestreLimite;
 	List<Telefone> telefones = new ArrayList<>();
-
-	
 }

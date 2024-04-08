@@ -108,7 +108,8 @@ public class MatriculaDao implements IMatricula<Matricula> {
 
 		return saida;
 	}
-
+	
+	@Override
 	public int verificaRa(Aluno a) throws SQLException, ClassNotFoundException {
 		Connection c = gDao.getConnection();
 		String sql = "{CALL sp_validaRa ( ?, ? )}";

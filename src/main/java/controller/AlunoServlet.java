@@ -53,26 +53,26 @@ public class AlunoServlet extends HttpServlet {
 
 		Aluno a = new Aluno();
 		List<Aluno> alunos = new ArrayList<>();
-	
+
 		if (cmd.contains("Buscar")) {
-		    if (cpf.trim().isEmpty()) {
-		        erro = "Por favor, informe o CPF.";
-		    }
+			if (cpf.trim().isEmpty()) {
+				erro = "Por favor, informe o CPF.";
+			}
 		} else if (cmd.contains("Cadastrar") || cmd.contains("Alterar")) {
-		    if (codCurso.trim().isEmpty() || cpf.trim().isEmpty() || nome.trim().isEmpty() ||
-		       dataNascimento.trim().isEmpty() || email.trim().isEmpty() || dataConclusao2Grau.trim().isEmpty() ||
-		        instituicaoConclusao2Grau.trim().isEmpty() || pontuacaoVestibular.trim().isEmpty() ||
-		        posicaoVestibular.trim().isEmpty()) {
-		    	
-		        erro = "Por favor, preencha todos os campos obrigatórios.";
-		    }
+			if (codCurso.trim().isEmpty() || cpf.trim().isEmpty() || nome.trim().isEmpty()
+					|| dataNascimento.trim().isEmpty() || email.trim().isEmpty() || dataConclusao2Grau.trim().isEmpty()
+					|| instituicaoConclusao2Grau.trim().isEmpty() || pontuacaoVestibular.trim().isEmpty()
+					|| posicaoVestibular.trim().isEmpty()) {
+
+				erro = "Por favor, preencha todos os campos obrigatórios.";
+			}
 		}
-		
+
 		if (!erro.isEmpty()) {
-		    request.setAttribute("erro", erro);
-		    RequestDispatcher rd = request.getRequestDispatcher("menuSecretaria.jsp");
-		    rd.forward(request, response);
-		    return; 
+			request.setAttribute("erro", erro);
+			RequestDispatcher rd = request.getRequestDispatcher("menuSecretaria.jsp");
+			rd.forward(request, response);
+			return;
 		}
 
 		if ((cmd.contains("Cadastrar") || cmd.contains("Alterar"))) {
@@ -116,28 +116,38 @@ public class AlunoServlet extends HttpServlet {
 		}
 
 		try {
-			if (cmd.contains("Cadastrar")) {
-				saida = cadastrarAluno(a);
-				a = null;
-			}
-			if (cmd.contains("Alterar")) {
-				saida = atualizarAluno(a);
-				a = null;
-			}
+			if (a.getCpf() != null) {
+				if (a.getCpf().length() == 11) {
+					if (cmd.contains("Cadastrar")) {
+						saida = cadastrarAluno(a);
+						a = null;
+					}
+					if (cmd.contains("Alterar")) {
+						saida = atualizarAluno(a);
+						a = null;
+					}
+					if (cmd.contains("Buscar")) {
+						if (verificaCpf(a) == 1) {
+							a = buscarAluno(a);
+						}
+					}
 
-			if (cmd.contains("Buscar")) {
-				a = buscarAluno(a);
+				} else {
+					erro = "Tamanho de CPF invalido";
+				}
 			}
-
 			if (cmd.contains("Listar")) {
 				alunos = listarAlunos();
-				if(alunos.isEmpty()) {
+				if (alunos.isEmpty()) {
 					erro = "Não existem alunos cadastrados";
 				}
 			}
 
 		} catch (SQLException | ClassNotFoundException e) {
 			erro = e.getMessage();
+			if (erro.contains("verificaDataConclusao")) {
+				erro = "A data de conclusão deve ser maior que a data de nascimento";
+			}
 		} finally {
 			request.setAttribute("saida", saida);
 			request.setAttribute("erro", erro);
@@ -181,6 +191,12 @@ public class AlunoServlet extends HttpServlet {
 		AlunoDao aDao = new AlunoDao(gDao);
 		alunos = aDao.listar();
 		return alunos;
+	}
+
+	private int verificaCpf(Aluno a) throws SQLException, ClassNotFoundException {
+		GenericDao gDao = new GenericDao();
+		AlunoDao aDao = new AlunoDao(gDao);
+		return aDao.verificaCpf(a);
 	}
 
 }

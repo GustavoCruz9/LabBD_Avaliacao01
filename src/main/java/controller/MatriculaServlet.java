@@ -40,14 +40,17 @@ public class MatriculaServlet extends HttpServlet {
 		String erro = "";
 
 		try {
-
-			if (verificaRa(a) == 1) {
-				disciplinas = listarDisciplinas(a);
-				if (disciplinas.isEmpty()) {
-					erro = "Aluno concluiu todas as disciplinas de seu curso";
+			if (a.getRa().length() == 9) {
+				if (verificaRa(a) == 1) {
+					disciplinas = listarDisciplinas(a);
+					if (disciplinas.isEmpty()) {
+						erro = "Aluno concluiu todas as disciplinas de seu curso";
+					}
+				} else {
+					erro = "RA inválido";
 				}
 			} else {
-				erro = "RA inválido";
+				erro = "Tamanho de RA incorreto";
 			}
 
 		} catch (SQLException | ClassNotFoundException e) {
@@ -105,10 +108,17 @@ public class MatriculaServlet extends HttpServlet {
 
 		try {
 			if (cmd.contains("🔍") || cmd.contains("☑️")) {
-
-				matriculas = listarMatriculas(a);
-				if (matriculas.isEmpty()) {
-					erro = "O aluno do Ra " + pesquisaRa + " não possui matriculas";
+				if (a.getRa().length() == 9) {
+					if (verificaRa(a) == 1) {
+						matriculas = listarMatriculas(a);
+						if (matriculas.isEmpty()) {
+							erro = "O aluno do Ra " + pesquisaRa + " não possui matriculas";
+						}
+					} else {
+						erro = "RA inválido";
+					}
+				} else {
+					erro = "Tamanho de RA incorreto";
 				}
 
 			} else {
@@ -148,8 +158,6 @@ public class MatriculaServlet extends HttpServlet {
 				RequestDispatcher rd = request.getRequestDispatcher("menuAluno.jsp");
 				rd.forward(request, response);
 			}
-//			RequestDispatcher rd = request.getRequestDispatcher("cadastrarMatricula.jsp");
-//			rd.forward(request, response);
 
 		}
 
