@@ -20,7 +20,7 @@
 				<div class="pesquisaCpf">
 					<input type="text" name="pesquisaRa"
 						id="pesquisaRa" placeholder="RA" class="inputCPF">
-					<input type="submit" value="☑️" class="btnCPF" id="botao"
+					<input type="submit" value="pesquisa RA" class="btnCPF" id="botao"
 						name="botao">
 				</div>
 			</div>

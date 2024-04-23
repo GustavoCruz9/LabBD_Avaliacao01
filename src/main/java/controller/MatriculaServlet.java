@@ -61,7 +61,7 @@ public class MatriculaServlet extends HttpServlet {
 			request.setAttribute("disciplinas", disciplinas);
 			request.setAttribute("pesquisaRa", pesquisaRa);
 
-			if (cmd.contains("✔️")) {
+			if (cmd.contains("pesquisa Ra")) {
 				RequestDispatcher rd = request.getRequestDispatcher("menuAluno.jsp");
 				rd.forward(request, response);
 			} else {
@@ -93,7 +93,7 @@ public class MatriculaServlet extends HttpServlet {
 
 		String aux = "";
 
-		if (!cmd.contains("🔍") && !cmd.contains("✔️") && !cmd.contains("🔎") && !cmd.contains("☑️")) {
+		if (!cmd.contains("Pesquisa Ra") && !cmd.contains("pesquisa Ra") && !cmd.contains("Pesquisa RA") && !cmd.contains("pesquisa RA")) {
 
 			if (cmd.contains(".")) {
 				aux = cmd.substring(0, cmd.length() - 1);
@@ -107,7 +107,7 @@ public class MatriculaServlet extends HttpServlet {
 		}
 
 		try {
-			if (cmd.contains("🔍") || cmd.contains("☑️")) {
+			if (cmd.contains("Pesquisa Ra") || cmd.contains("pesquisa RA")) {
 				if (a.getRa().length() == 9) {
 					if (verificaRa(a) == 1) {
 						matriculas = listarMatriculas(a);
@@ -141,20 +141,20 @@ public class MatriculaServlet extends HttpServlet {
 			request.setAttribute("disciplinas", disciplinas);
 			request.setAttribute("matriculas", matriculas);
 
-			if (cmd.contains("🔍")) {
+			if (cmd.contains("Pesquisa Ra")) {
 				RequestDispatcher rd = request.getRequestDispatcher("vizualizarMatricula.jsp");
 				rd.forward(request, response);
 			}
-			if (cmd.contains("🔎")
-					|| (!cmd.contains(".")) && !cmd.contains("🔍") && !cmd.contains("☑️") && !cmd.contains("✔️")) {
+			if (cmd.contains("Pesquisa RA")
+					|| (!cmd.contains(".")) && !cmd.contains("Pesquisa Ra") && !cmd.contains("pesquisa RA") && !cmd.contains("pesquisa Ra")) {
 				RequestDispatcher rd = request.getRequestDispatcher("cadastrarMatricula.jsp");
 				rd.forward(request, response);
 			}
-			if (cmd.contains("☑️")) {
+			if (cmd.contains("pesquisa RA")) {
 				RequestDispatcher rd = request.getRequestDispatcher("vizualizarMatriculasAluno.jsp");
 				rd.forward(request, response);
 			}
-			if (cmd.contains(".") || cmd.contains("✔️")) {
+			if (cmd.contains(".") || cmd.contains("pesquisa Ra")) {
 				RequestDispatcher rd = request.getRequestDispatcher("menuAluno.jsp");
 				rd.forward(request, response);
 			}
